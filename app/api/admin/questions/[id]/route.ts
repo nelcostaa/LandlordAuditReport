@@ -45,18 +45,29 @@ export async function GET(
     const result = await sql`
       SELECT 
         qt.*,
-        json_agg(DISTINCT jsonb_build_object(
-          'id', qao.id,
-          'option_text', qao.option_text,
-          'score_value', qao.score_value,
-          'option_order', qao.option_order,
-          'is_example', qao.is_example
-        ) ORDER BY qao.option_order) FILTER (WHERE qao.id IS NOT NULL) as answer_options,
-        json_agg(DISTINCT jsonb_build_object(
-          'score_level', qse.score_level,
-          'reason_text', qse.reason_text,
-          'report_action', qse.report_action
-        )) FILTER (WHERE qse.id IS NOT NULL) as score_examples
+        COALESCE(
+          json_agg(
+            jsonb_build_object(
+              'id', qao.id,
+              'option_text', qao.option_text,
+              'score_value', qao.score_value,
+              'option_order', qao.option_order,
+              'is_example', qao.is_example
+            ) ORDER BY qao.option_order
+          ) FILTER (WHERE qao.id IS NOT NULL),
+          '[]'
+        ) as answer_options,
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object(
+              'id', qse.id,
+              'score_level', qse.score_level,
+              'reason_text', qse.reason_text,
+              'report_action', qse.report_action
+            )
+          ) FILTER (WHERE qse.id IS NOT NULL),
+          '[]'
+        ) as score_examples
       FROM question_templates qt
       LEFT JOIN question_answer_options qao ON qt.id = qao.question_template_id
       LEFT JOIN question_score_examples qse ON qt.id = qse.question_template_id

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { ChevronRight, AlertCircle, Info } from "lucide-react";
 
 const questionFormSchema = z.object({
   category: z.string().min(1, "Category is required"),
@@ -52,6 +53,8 @@ export default function EditQuestionPage() {
   const [error, setError] = useState("");
   const [categories, setCategories] = useState<{category: string; sub_categories: string[]}[]>([]);
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [questionNumber, setQuestionNumber] = useState("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const {
     register,
@@ -60,18 +63,41 @@ export default function EditQuestionPage() {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<FormData>({
     resolver: zodResolver(questionFormSchema),
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "answer_options",
   });
 
   const questionType = watch("question_type");
   const selectedCategory = watch("category");
+
+  // Track unsaved changes
+  useEffect(() => {
+    setHasUnsavedChanges(isDirty);
+  }, [isDirty]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + S to save
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSubmit(onSubmit)();
+      }
+      // Esc to close modal
+      if (e.key === 'Escape' && showDeactivateConfirm) {
+        setShowDeactivateConfirm(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showDeactivateConfirm]);
 
   // Fetch categories
   useEffect(() => {
@@ -95,23 +121,45 @@ export default function EditQuestionPage() {
         const data = await response.json();
         const question = data.question;
 
+        setQuestionNumber(question.question_number);
+
         // Convert PostgreSQL array to JavaScript array
         let tiersArray = [];
         if (Array.isArray(question.applicable_tiers)) {
           tiersArray = question.applicable_tiers;
         } else if (typeof question.applicable_tiers === 'string') {
-          // Handle {tier_0,tier_1} format
           tiersArray = question.applicable_tiers
             .replace(/[{}]/g, '')
             .split(',')
             .filter(Boolean);
         }
 
-        // Parse score_examples
-        const scoreExamples = question.score_examples || [];
+        // Parse score_examples (handle both array and null)
+        const scoreExamples = Array.isArray(question.score_examples) ? question.score_examples : [];
         const lowExample = scoreExamples.find((ex: any) => ex.score_level === 'low');
         const mediumExample = scoreExamples.find((ex: any) => ex.score_level === 'medium');
         const highExample = scoreExamples.find((ex: any) => ex.score_level === 'high');
+
+        // Parse answer_options (handle both array and JSON string)
+        let answerOptions = [];
+        if (Array.isArray(question.answer_options)) {
+          answerOptions = question.answer_options;
+        } else if (typeof question.answer_options === 'string') {
+          try {
+            answerOptions = JSON.parse(question.answer_options);
+          } catch (e) {
+            answerOptions = [];
+          }
+        }
+
+        // Map answer options correctly
+        const mappedOptions = answerOptions
+          .filter((opt: any) => opt && opt.option_text) // Filter out null/invalid entries
+          .map((opt: any) => ({
+            option_text: String(opt.option_text || ""),
+            score_value: Number(opt.score_value || 5),
+            is_example: Boolean(opt.is_example),
+          }));
 
         // Reset form with question data
         reset({
@@ -123,11 +171,10 @@ export default function EditQuestionPage() {
           weight: parseFloat(question.weight),
           is_critical: question.is_critical,
           motivation_learning_point: question.motivation_learning_point || "",
-          answer_options: (question.answer_options || []).map((opt: any) => ({
-            option_text: opt.option_text,
-            score_value: opt.score_value,
-            is_example: opt.is_example || false,
-          })),
+          answer_options: mappedOptions.length > 0 ? mappedOptions : [
+            { option_text: "", score_value: 10, is_example: false },
+            { option_text: "", score_value: 1, is_example: false },
+          ],
           score_examples: {
             low_reason: lowExample?.reason_text || "",
             low_action: lowExample?.report_action || "",
@@ -137,6 +184,12 @@ export default function EditQuestionPage() {
             high_action: highExample?.report_action || "",
           },
         });
+
+        // Update field array
+        replace(mappedOptions.length > 0 ? mappedOptions : [
+          { option_text: "", score_value: 10, is_example: false },
+          { option_text: "", score_value: 1, is_example: false },
+        ]);
 
         setLoading(false);
       } catch (error) {
@@ -149,24 +202,23 @@ export default function EditQuestionPage() {
     if (questionId) {
       fetchQuestion();
     }
-  }, [questionId, reset]);
+  }, [questionId, reset, replace]);
 
   // Auto-set answer options when type changes
   useEffect(() => {
     if (questionType === "yes_no" && fields.length !== 2) {
-      setValue("answer_options", [
+      replace([
         { option_text: "Yes", score_value: 10, is_example: false },
         { option_text: "No", score_value: 1, is_example: false },
       ]);
     }
-  }, [questionType, fields.length, setValue]);
+  }, [questionType, fields.length, replace]);
 
   const onSubmit = async (data: FormData) => {
     setError("");
     setSubmitting(true);
 
     try {
-      // Transform score_examples from flat object to array
       const score_examples = [];
       if (data.score_examples.low_reason) {
         score_examples.push({
@@ -244,17 +296,34 @@ export default function EditQuestionPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">Loading question...</p>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Skeleton loader */}
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-lg p-6 mb-4">
+              <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="space-y-3">
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error && !submitting) {
     return (
-      <div className="max-w-4xl space-y-6">
-        <div className="bg-red-50 text-red-600 p-4 rounded">
-          {error}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-medium">Error Loading Question</p>
+            <p className="text-sm mt-1">{error}</p>
+          </div>
         </div>
         <Link href="/dashboard/questions">
           <Button variant="outline">← Back to Questions</Button>
@@ -264,23 +333,42 @@ export default function EditQuestionPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">Edit Question</h2>
-          <p className="text-gray-600 mt-2">
-            Update question details, answer options, and scoring
-          </p>
-        </div>
-        <Link href="/dashboard/questions">
-          <Button variant="outline">← Back</Button>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumbs */}
+      <nav className="flex items-center text-sm text-gray-600 mb-4">
+        <Link href="/dashboard/questions" className="hover:text-gray-900">
+          Questions
         </Link>
+        <ChevronRight className="w-4 h-4 mx-2" />
+        <span className="text-gray-900 font-medium">Edit</span>
+        {questionNumber && (
+          <>
+            <ChevronRight className="w-4 h-4 mx-2" />
+            <span className="text-gray-900 font-medium">Q{questionNumber}</span>
+          </>
+        )}
+      </nav>
+
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-3xl font-bold">Edit Question</h1>
+          {questionNumber && (
+            <Badge variant="outline" className="text-lg px-3 py-1">
+              Q{questionNumber}
+            </Badge>
+          )}
+        </div>
+        <p className="text-gray-600">
+          Update question details, answer options, and scoring
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded">
-            {error}
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <p>{error}</p>
           </div>
         )}
 
@@ -292,11 +380,13 @@ export default function EditQuestionPage() {
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
+                <Label htmlFor="category">
+                  Category <span className="text-red-500">*</span>
+                </Label>
                 <select
                   id="category"
                   {...register("category")}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">Select category</option>
                   {categories.map((cat) => (
@@ -306,16 +396,21 @@ export default function EditQuestionPage() {
                   ))}
                 </select>
                 {errors.category && (
-                  <p className="text-sm text-red-600">{errors.category.message}</p>
+                  <p className="text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.category.message}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sub_category">Sub-Category *</Label>
+                <Label htmlFor="sub_category">
+                  Sub-Category <span className="text-red-500">*</span>
+                </Label>
                 <select
                   id="sub_category"
                   {...register("sub_category")}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   disabled={!selectedCategory}
                 >
                   <option value="">Select sub-category</option>
@@ -326,21 +421,30 @@ export default function EditQuestionPage() {
                   ))}
                 </select>
                 {errors.sub_category && (
-                  <p className="text-sm text-red-600">{errors.sub_category.message}</p>
+                  <p className="text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.sub_category.message}
+                  </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="question_text">Question Text *</Label>
+              <Label htmlFor="question_text">
+                Question Text <span className="text-red-500">*</span>
+              </Label>
               <Textarea
                 id="question_text"
                 {...register("question_text")}
                 placeholder="Enter the audit question..."
                 rows={3}
+                className="resize-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               {errors.question_text && (
-                <p className="text-sm text-red-600">{errors.question_text.message}</p>
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.question_text.message}
+                </p>
               )}
             </div>
 
@@ -349,30 +453,33 @@ export default function EditQuestionPage() {
                 type="checkbox"
                 id="is_critical"
                 {...register("is_critical")}
-                className="h-4 w-4 cursor-pointer"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer"
               />
-              <Label htmlFor="is_critical" className="cursor-pointer">
-                Mark as <Badge variant="destructive" className="ml-1">CRITICAL</Badge> question
+              <Label htmlFor="is_critical" className="cursor-pointer flex items-center gap-2">
+                Mark as <Badge variant="destructive">CRITICAL</Badge> question
               </Label>
             </div>
           </CardContent>
         </Card>
 
-        {/* Question Type & Answers */}
+        {/* Answer Options */}
         <Card>
           <CardHeader>
             <CardTitle>Answer Options</CardTitle>
+            <CardDescription>
+              Configure how landlords can respond to this question
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Question Type *</Label>
+              <Label>Question Type <span className="text-red-500">*</span></Label>
               <div className="flex gap-4">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     value="multiple_choice"
                     {...register("question_type")}
-                    className="h-4 w-4"
+                    className="h-4 w-4 cursor-pointer"
                   />
                   <span>Multiple Choice</span>
                 </label>
@@ -381,7 +488,7 @@ export default function EditQuestionPage() {
                     type="radio"
                     value="yes_no"
                     {...register("question_type")}
-                    className="h-4 w-4"
+                    className="h-4 w-4 cursor-pointer"
                   />
                   <span>Yes/No</span>
                 </label>
@@ -389,6 +496,13 @@ export default function EditQuestionPage() {
             </div>
 
             <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                <span className="font-medium">Answer Option</span>
+                <span className="flex-1"></span>
+                <span className="font-medium w-20 text-center">Score (1-10)</span>
+                <span className="w-10"></span>
+              </div>
+              
               {fields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 items-start">
                   <div className="flex-1 space-y-2">
@@ -396,9 +510,10 @@ export default function EditQuestionPage() {
                       {...register(`answer_options.${index}.option_text`)}
                       placeholder="Answer option text"
                       disabled={questionType === "yes_no"}
+                      className="h-11 focus-visible:ring-2"
                     />
                   </div>
-                  <div className="w-24">
+                  <div className="w-20">
                     <Input
                       type="number"
                       {...register(`answer_options.${index}.score_value`, {
@@ -407,22 +522,28 @@ export default function EditQuestionPage() {
                       placeholder="Score"
                       min={1}
                       max={10}
+                      className="h-11 text-center focus-visible:ring-2"
                     />
                   </div>
                   {questionType === "multiple_choice" && fields.length > 2 && (
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
+                      size="icon"
+                      className="h-11 w-10 flex-shrink-0"
                       onClick={() => remove(index)}
                     >
                       ✕
                     </Button>
                   )}
+                  {questionType === "multiple_choice" && fields.length === 2 && (
+                    <div className="w-10"></div>
+                  )}
                 </div>
               ))}
               {errors.answer_options && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
                   {errors.answer_options.message || "Check answer options"}
                 </p>
               )}
@@ -447,43 +568,79 @@ export default function EditQuestionPage() {
         <Card>
           <CardHeader>
             <CardTitle>Tiers & Weighting</CardTitle>
+            <CardDescription>
+              Configure which tiers this question applies to and its scoring weight
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Applicable Tiers *</Label>
-              <div className="flex gap-3 flex-wrap">
-                {["tier_0", "tier_1", "tier_2", "tier_3", "tier_4"].map((tier) => (
-                  <label key={tier} className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      value={tier}
-                      {...register("applicable_tiers")}
-                      className="h-4 w-4"
-                    />
-                    <span>{tier.replace("_", " ").toUpperCase()}</span>
-                  </label>
-                ))}
+              <Label className="flex items-center gap-2">
+                Applicable Tiers <span className="text-red-500">*</span>
+                <span className="text-xs text-gray-500 font-normal">(Select at least one)</span>
+              </Label>
+              <div className="flex gap-2 flex-wrap">
+                {["tier_0", "tier_1", "tier_2", "tier_3", "tier_4"].map((tier) => {
+                  const isSelected = watch("applicable_tiers")?.includes(tier);
+                  return (
+                    <label
+                      key={tier}
+                      className="cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        value={tier}
+                        {...register("applicable_tiers")}
+                        className="sr-only"
+                      />
+                      <div className={`
+                        px-4 py-2 rounded-md border-2 transition-all text-sm font-medium
+                        ${isSelected 
+                          ? 'bg-primary text-primary-foreground border-primary' 
+                          : 'bg-background border-input hover:border-primary/50'
+                        }
+                      `}>
+                        {tier.replace("_", " ").toUpperCase()}
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
               {errors.applicable_tiers && (
-                <p className="text-sm text-red-600">{errors.applicable_tiers.message}</p>
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.applicable_tiers.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="weight">Weighting Factor * (0.5 - 2.0)</Label>
+              <Label htmlFor="weight" className="flex items-center gap-2">
+                Weighting Factor <span className="text-red-500">*</span>
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-gray-600"
+                  title="Higher weight = more impact on overall score. Standard = 1.0, Critical questions typically use 2.0"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              </Label>
               <Input
                 id="weight"
                 type="number"
-                step="0.5"
+                step="0.1"
                 min="0.5"
                 max="2.0"
                 {...register("weight", { valueAsNumber: true })}
+                className="max-w-xs focus-visible:ring-2"
               />
               <p className="text-xs text-gray-500">
-                Higher weight = more impact on overall score. Standard = 1.0, Critical = 2.0
+                Range: 0.5 - 2.0 (Standard = 1.0, Critical = 2.0)
               </p>
               {errors.weight && (
-                <p className="text-sm text-red-600">{errors.weight.message}</p>
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.weight.message}
+                </p>
               )}
             </div>
           </CardContent>
@@ -494,7 +651,7 @@ export default function EditQuestionPage() {
           <CardHeader>
             <CardTitle>Scoring Guidance</CardTitle>
             <CardDescription>
-              Provide context for each score level to guide recommendations
+              Provide context for each score level to guide audit recommendations
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -505,87 +662,121 @@ export default function EditQuestionPage() {
                 {...register("motivation_learning_point")}
                 placeholder="Why is this question important? What should landlords learn?"
                 rows={2}
+                className="resize-none"
               />
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-red-600">Low Score (1-3)</Label>
+                <Label className="text-red-600 flex items-center gap-2">
+                  Low Score (1-3)
+                  <span className="text-xs text-gray-500 font-normal">(Optional)</span>
+                </Label>
                 <Textarea
                   {...register("score_examples.low_reason")}
                   placeholder="Reason for low score"
                   rows={2}
+                  className="text-sm resize-none"
                 />
                 <Textarea
                   {...register("score_examples.low_action")}
                   placeholder="Recommended action"
                   rows={2}
+                  className="text-sm resize-none"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-yellow-600">Medium Score (4-7)</Label>
+                <Label className="text-yellow-600 flex items-center gap-2">
+                  Medium Score (4-7)
+                  <span className="text-xs text-gray-500 font-normal">(Optional)</span>
+                </Label>
                 <Textarea
                   {...register("score_examples.medium_reason")}
                   placeholder="Reason for medium score"
                   rows={2}
+                  className="text-sm resize-none"
                 />
                 <Textarea
                   {...register("score_examples.medium_action")}
                   placeholder="Recommended action"
                   rows={2}
+                  className="text-sm resize-none"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-green-600">High Score (8-10)</Label>
+                <Label className="text-green-600 flex items-center gap-2">
+                  High Score (8-10)
+                  <span className="text-xs text-gray-500 font-normal">(Optional)</span>
+                </Label>
                 <Textarea
                   {...register("score_examples.high_reason")}
                   placeholder="Reason for high score"
                   rows={2}
+                  className="text-sm resize-none"
                 />
                 <Textarea
                   {...register("score_examples.high_action")}
                   placeholder="Recommended action"
                   rows={2}
+                  className="text-sm resize-none"
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Submit & Deactivate */}
-        <div className="flex justify-between items-center">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setShowDeactivateConfirm(true)}
-            disabled={deactivating}
-          >
-            {deactivating ? "Deactivating..." : "Deactivate Question"}
-          </Button>
+        {/* Sticky Action Bar */}
+        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setShowDeactivateConfirm(true)}
+              disabled={deactivating || submitting}
+            >
+              {deactivating ? "Deactivating..." : "Deactivate Question"}
+            </Button>
+            {hasUnsavedChanges && (
+              <span className="text-sm text-orange-600 flex items-center gap-1">
+                <div className="w-2 h-2 bg-orange-600 rounded-full animate-pulse"></div>
+                Unsaved changes
+              </span>
+            )}
+          </div>
 
           <div className="flex gap-3">
             <Link href="/dashboard/questions">
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" disabled={submitting}>
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving..." : "Save Changes"}
+            <Button type="submit" disabled={submitting} className="min-w-32">
+              {submitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </div>
         </div>
       </form>
 
-      {/* Deactivate Confirmation Dialog */}
+      {/* Deactivate Confirmation Modal */}
       {showDeactivateConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>Deactivate Question?</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <AlertCircle className="w-5 h-5" />
+                Deactivate Question?
+              </CardTitle>
               <CardDescription>
-                Are you sure you want to deactivate this question? It will no longer appear in new audits, but existing audit data will be preserved.
+                This question will no longer appear in new audits. Existing audit data will be preserved. This action cannot be undone.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-end gap-3">
@@ -610,4 +801,3 @@ export default function EditQuestionPage() {
     </div>
   );
 }
-
