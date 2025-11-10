@@ -28,6 +28,7 @@ export default function AuditFormPage() {
   const params = useParams();
   const router = useRouter();
   const [audit, setAudit] = useState<Audit | null>(null);
+  const [dynamicQuestions, setDynamicQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -36,19 +37,33 @@ export default function AuditFormPage() {
 
   const token = params?.token as string;
 
-  // Fetch audit data
+  // Fetch audit data and questions
   useEffect(() => {
-    const fetchAudit = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/audits/${token}`);
-        const data = await response.json();
+        // Fetch audit
+        const auditResponse = await fetch(`/api/audits/${token}`);
+        const auditData = await auditResponse.json();
 
-        if (!response.ok) {
-          setError(data.error || "Failed to load audit");
+        if (!auditResponse.ok) {
+          setError(auditData.error || "Failed to load audit");
           return;
         }
 
-        setAudit(data.audit);
+        setAudit(auditData.audit);
+
+        // Fetch questions for this tier from database
+        const questionsResponse = await fetch(
+          `/api/questions/for-tier/${auditData.audit.risk_audit_tier}`
+        );
+        const questionsData = await questionsResponse.json();
+
+        if (questionsResponse.ok && questionsData.questions) {
+          setDynamicQuestions(questionsData.questions);
+        } else {
+          // Fallback to static questions if API fails
+          setDynamicQuestions(getQuestionsByTier(auditData.audit.risk_audit_tier));
+        }
       } catch (error) {
         setError("An error occurred while loading the audit");
       } finally {
@@ -57,7 +72,7 @@ export default function AuditFormPage() {
     };
 
     if (token) {
-      fetchAudit();
+      fetchData();
     }
   }, [token]);
 
@@ -85,26 +100,36 @@ export default function AuditFormPage() {
     );
   }
 
-  if (!audit) {
+  if (!audit || dynamicQuestions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Audit not found</p>
+        <p className="text-gray-500">
+          {!audit ? "Audit not found" : "Loading questions..."}
+        </p>
       </div>
     );
   }
 
-  return <AuditFormContent audit={audit} token={token} />;
+  return <AuditFormContent audit={audit} token={token} questions={dynamicQuestions} />;
 }
 
-// Separate component that only renders when audit exists
-function AuditFormContent({ audit, token }: { audit: Audit; token: string }) {
+// Separate component that only renders when audit and questions exist
+function AuditFormContent({ 
+  audit, 
+  token, 
+  questions 
+}: { 
+  audit: Audit; 
+  token: string;
+  questions: Question[];
+}) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [currentCategory, setCurrentCategory] = useState(0);
 
-  // Get questions for this tier - audit is guaranteed to exist here
-  const relevantQuestions = getQuestionsByTier(audit.risk_audit_tier);
+  // Use questions from database (passed as props)
+  const relevantQuestions = questions;
   const groupedQuestions = groupQuestionsByCategory(relevantQuestions);
   const categories = Object.keys(groupedQuestions);
   const currentCategoryName = categories[currentCategory];

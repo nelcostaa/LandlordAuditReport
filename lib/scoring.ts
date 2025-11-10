@@ -1,4 +1,4 @@
-import { questions, CATEGORIES } from "./questions";
+import { Question } from "./questions";
 import { FormResponse } from "@/types/database";
 
 export interface CategoryScore {
@@ -28,7 +28,8 @@ export interface RecommendedAction {
 // Calculate score for a single question
 function calculateQuestionScore(
   questionId: string,
-  answerValue: number
+  answerValue: number,
+  questions: Question[]
 ): number {
   const question = questions.find((q) => q.id === questionId);
   if (!question) return 0;
@@ -57,11 +58,13 @@ function getRiskColor(riskLevel: "low" | "medium" | "high"): string {
 
 // Calculate category scores
 export function calculateCategoryScores(
-  responses: FormResponse[]
+  responses: FormResponse[],
+  questions: Question[]
 ): CategoryScore[] {
   const categoryScores: CategoryScore[] = [];
   
-  const categories = Object.values(CATEGORIES);
+  // Get unique categories from questions
+  const categories = [...new Set(questions.map(q => q.category))];
   
   categories.forEach((category) => {
     const categoryQuestions = questions.filter((q) => q.category === category);
@@ -72,7 +75,7 @@ export function calculateCategoryScores(
     categoryQuestions.forEach((question) => {
       const response = responses.find((r) => r.question_id === question.id);
       if (response) {
-        totalScore += calculateQuestionScore(question.id, response.answer_value);
+        totalScore += calculateQuestionScore(question.id, response.answer_value, questions);
       }
     });
     
@@ -113,7 +116,8 @@ export function calculateOverallScore(
 
 // Generate recommended actions
 export function generateRecommendedActions(
-  responses: FormResponse[]
+  responses: FormResponse[],
+  questions: Question[]
 ): RecommendedAction[] {
   const actions: RecommendedAction[] = [];
   
@@ -207,10 +211,13 @@ export function generateRecommendedActions(
 }
 
 // Calculate all scores and actions
-export function calculateAuditScores(responses: FormResponse[]) {
-  const categoryScores = calculateCategoryScores(responses);
+export function calculateAuditScores(
+  responses: FormResponse[],
+  questions: Question[]
+) {
+  const categoryScores = calculateCategoryScores(responses, questions);
   const overallScore = calculateOverallScore(categoryScores);
-  const recommendedActions = generateRecommendedActions(responses);
+  const recommendedActions = generateRecommendedActions(responses, questions);
   
   return {
     categoryScores,

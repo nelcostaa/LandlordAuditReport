@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "tsx db/migrate.ts"
+    "db:migrate": "tsx db/migrate.ts",
+    "db:migrate:questions": "tsx db/migrate-questions.ts",
+    "db:seed:questions": "tsx db/seed-questions.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

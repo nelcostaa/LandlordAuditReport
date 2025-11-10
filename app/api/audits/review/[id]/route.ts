@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sql } from "@vercel/postgres";
 import { calculateAuditScores } from "@/lib/scoring";
+import { getQuestionsByTier } from "@/lib/questions";
 
 // Get audit details with responses and scores
 export async function GET(
@@ -41,10 +42,23 @@ export async function GET(
 
     const responses = responsesResult.rows as any[];
 
+    // Fetch questions for this tier
+    let questionsForScoring;
+    try {
+      const questionsResponse = await fetch(
+        `${process.env.NEXTAUTH_URL}/api/questions/for-tier/${audit.risk_audit_tier}`
+      );
+      const questionsData = await questionsResponse.json();
+      questionsForScoring = questionsData.questions || getQuestionsByTier(audit.risk_audit_tier);
+    } catch (error) {
+      // Fallback to static questions
+      questionsForScoring = getQuestionsByTier(audit.risk_audit_tier);
+    }
+
     // Calculate scores if responses exist
     let scores = null;
     if (responses.length > 0) {
-      scores = calculateAuditScores(responses as any);
+      scores = calculateAuditScores(responses as any, questionsForScoring);
 
       // Save scores to database
       for (const categoryScore of scores.categoryScores) {
