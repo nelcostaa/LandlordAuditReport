@@ -78,9 +78,42 @@ export default function AuditFormPage() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
+  // Form state persistence with localStorage
+  useEffect(() => {
+    if (!audit) return;
+
+    // Load saved form data from localStorage
+    const storageKey = `audit-form-${audit.token}`;
+    const savedData = localStorage.getItem(storageKey);
+    
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        Object.entries(parsed).forEach(([key, value]) => {
+          setValue(key as any, value as any);
+        });
+      } catch (error) {
+        console.error("Failed to restore form data:", error);
+      }
+    }
+  }, [audit, setValue]);
+
+  // Save form data to localStorage on change
+  useEffect(() => {
+    if (!audit) return;
+    
+    const storageKey = `audit-form-${audit.token}`;
+    const subscription = watch((value) => {
+      localStorage.setItem(storageKey, JSON.stringify(value));
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [audit, watch]);
 
   // Calculate progress (optimized with useMemo)
   const allValues = watch();
@@ -95,6 +128,25 @@ export default function AuditFormPage() {
   }, [allValues, relevantQuestions]);
   
   const totalQuestions = relevantQuestions.length;
+
+  // Calculate answered questions per category for visual feedback
+  const categoryProgress = useMemo(() => {
+    const progress: Record<string, { answered: number; total: number }> = {};
+    
+    Object.entries(groupedQuestions).forEach(([category, catQuestions]) => {
+      const answered = catQuestions.filter((q) => {
+        const value = allValues[q.id as keyof FormData];
+        return value === 1 || value === 5 || value === 10;
+      }).length;
+      
+      progress[category] = {
+        answered,
+        total: catQuestions.length,
+      };
+    });
+    
+    return progress;
+  }, [allValues, groupedQuestions]);
 
   // Submit handler
   const onSubmit = async (data: FormData) => {
@@ -118,6 +170,11 @@ export default function AuditFormPage() {
       if (!response.ok) {
         setError(result.error || "Failed to submit audit");
         return;
+      }
+
+      // Clear localStorage on successful submit
+      if (audit) {
+        localStorage.removeItem(`audit-form-${audit.token}`);
       }
 
       setSubmitted(true);
@@ -251,17 +308,31 @@ export default function AuditFormPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex gap-2 flex-wrap">
-                {categories.map((category, index) => (
-                  <Button
-                    key={category}
-                    type="button"
-                    variant={currentCategory === index ? "default" : "outline"}
-                    onClick={() => setCurrentCategory(index)}
-                    size="sm"
-                  >
-                    {index + 1}. {category.split(" ")[0]}
-                  </Button>
-                ))}
+                {categories.map((category, index) => {
+                  const catProgress = categoryProgress[category];
+                  const isComplete = catProgress && catProgress.answered === catProgress.total;
+                  
+                  return (
+                    <Button
+                      key={category}
+                      type="button"
+                      variant={currentCategory === index ? "default" : "outline"}
+                      onClick={() => setCurrentCategory(index)}
+                      size="sm"
+                      className="relative"
+                    >
+                      {isComplete && (
+                        <span className="absolute -top-1 -right-1 text-green-500 text-lg">✓</span>
+                      )}
+                      {index + 1}. {category.split(" ")[0]}
+                      {catProgress && (
+                        <span className="ml-1 text-xs opacity-70">
+                          ({catProgress.answered}/{catProgress.total})
+                        </span>
+                      )}
+                    </Button>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
