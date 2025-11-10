@@ -8,7 +8,6 @@ import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Audit } from "@/types/database";
@@ -62,64 +61,140 @@ export default function AuditFormPage() {
     }
   }, [token]);
 
-  // Get questions for this tier
-  const relevantQuestions = audit ? getQuestionsByTier(audit.risk_audit_tier) : [];
+  // Don't initialize form until audit is loaded
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Loading audit...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-red-600">Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!audit) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Audit not found</p>
+      </div>
+    );
+  }
+
+  return <AuditFormContent audit={audit} token={token} />;
+}
+
+// Separate component that only renders when audit exists
+function AuditFormContent({ audit, token }: { audit: Audit; token: string }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [currentCategory, setCurrentCategory] = useState(0);
+
+  // Get questions for this tier - audit is guaranteed to exist here
+  const relevantQuestions = getQuestionsByTier(audit.risk_audit_tier);
   const groupedQuestions = groupQuestionsByCategory(relevantQuestions);
   const categories = Object.keys(groupedQuestions);
   const currentCategoryName = categories[currentCategory];
   const currentQuestions = groupedQuestions[currentCategoryName] || [];
 
-  // Form setup
-  const formSchema = createFormSchema(relevantQuestions);
-  type FormData = z.infer<typeof formSchema>;
+  // CRITICAL: Replace dots with underscores to avoid React Hook Form dot notation parsing
+  // RHF treats "1.1" as nested path { 1: { 1: value } }, causing form state corruption
+  const prefixedSchema: Record<string, z.ZodTypeAny> = {};
+  relevantQuestions.forEach((q) => {
+    const safeKey = `q_${q.id.replace(/\./g, '_')}`;
+    prefixedSchema[safeKey] = z.union([z.literal(1), z.literal(5), z.literal(10)], {
+      message: "Please select an answer",
+    });
+  });
+  const actualFormSchema = z.object(prefixedSchema);
+  type ActualFormData = z.infer<typeof actualFormSchema>;
 
   const {
     control,
     handleSubmit,
     formState: { errors },
     watch,
-    setValue,
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    reset,
+  } = useForm<ActualFormData>({
+    resolver: zodResolver(actualFormSchema),
+    mode: 'onChange',
+    defaultValues: Object.fromEntries(
+      relevantQuestions.map(q => [`q_${q.id.replace(/\./g, '_')}`, undefined])
+    ) as any,
   });
 
   // Form state persistence with localStorage
   useEffect(() => {
-    if (!audit) return;
-
-    // Load saved form data from localStorage
     const storageKey = `audit-form-${audit.token}`;
     const savedData = localStorage.getItem(storageKey);
     
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
+        const validQuestionIds = relevantQuestions.map(q => q.id);
+        const validData: Partial<ActualFormData> = {};
+        
+        // Build clean data object with ONLY valid keys
         Object.entries(parsed).forEach(([key, value]) => {
-          setValue(key as any, value as any);
+          // Normalize key: handle "1.1", "q_1.1", or "q_1_1" formats
+          let cleanKey = key;
+          if (key.startsWith('q_')) {
+            cleanKey = key.replace('q_', '').replace(/_/g, '.');
+          }
+          
+          if (validQuestionIds.includes(cleanKey) && (value === 1 || value === 5 || value === 10)) {
+            const safeKey = `q_${cleanKey.replace(/\./g, '_')}`;
+            validData[safeKey as keyof ActualFormData] = value as any;
+          }
         });
+        
+        // Restore saved values using reset() for reliability
+        if (Object.keys(validData).length > 0) {
+          const defaultValues = Object.fromEntries(
+            relevantQuestions.map(q => [`q_${q.id.replace(/\./g, '_')}`, validData[`q_${q.id.replace(/\./g, '_')}` as keyof ActualFormData] || undefined])
+          );
+          reset(defaultValues as any, { keepDirty: false });
+        }
       } catch (error) {
         console.error("Failed to restore form data:", error);
+        localStorage.removeItem(storageKey);
       }
     }
-  }, [audit, setValue]);
+  }, [audit.token, relevantQuestions, reset]);
 
-  // Save form data to localStorage on change
+  // Auto-save form data to localStorage
   useEffect(() => {
-    if (!audit) return;
-    
     const storageKey = `audit-form-${audit.token}`;
     const subscription = watch((value) => {
-      localStorage.setItem(storageKey, JSON.stringify(value));
+      // Save only answered questions (clean data)
+      const cleanData = Object.fromEntries(
+        Object.entries(value).filter(([_, v]) => v === 1 || v === 5 || v === 10)
+      );
+      localStorage.setItem(storageKey, JSON.stringify(cleanData));
     });
     
     return () => subscription.unsubscribe();
-  }, [audit, watch]);
+  }, [audit.token, watch]);
 
-  // Calculate progress (optimized with useMemo)
+  // Calculate progress
   const allValues = watch();
   const { answeredCount, progress } = useMemo(() => {
     const answered = relevantQuestions.filter((q) => {
-      const value = allValues[q.id as keyof FormData];
+      const safeKey = `q_${q.id.replace(/\./g, '_')}`;
+      const value = allValues[safeKey as keyof ActualFormData];
       return value === 1 || value === 5 || value === 10;
     }).length;
     const total = relevantQuestions.length;
@@ -135,7 +210,8 @@ export default function AuditFormPage() {
     
     Object.entries(groupedQuestions).forEach(([category, catQuestions]) => {
       const answered = catQuestions.filter((q) => {
-        const value = allValues[q.id as keyof FormData];
+        const safeKey = `q_${q.id.replace(/\./g, '_')}`;
+        const value = allValues[safeKey as keyof ActualFormData];
         return value === 1 || value === 5 || value === 10;
       }).length;
       
@@ -149,14 +225,15 @@ export default function AuditFormPage() {
   }, [allValues, groupedQuestions]);
 
   // Submit handler with enhanced validation
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: ActualFormData) => {
     setError("");
     setSubmitting(true);
 
     try {
       // Client-side validation: ensure all questions answered
       const unansweredQuestions = relevantQuestions.filter((q) => {
-        const value = data[q.id as keyof FormData];
+        const safeKey = `q_${q.id.replace(/\./g, '_')}`;
+        const value = data[safeKey as keyof ActualFormData];
         return value !== 1 && value !== 5 && value !== 10;
       });
 
@@ -177,10 +254,13 @@ export default function AuditFormPage() {
         return;
       }
 
-      const responses = Object.entries(data).map(([question_id, answer_value]) => ({
-        question_id,
-        answer_value: answer_value as 1 | 5 | 10,
-      }));
+      // Convert safe keys back to original question IDs for API
+      const responses = Object.entries(data)
+        .filter(([key, value]) => key.startsWith('q_') && (value === 1 || value === 5 || value === 10))
+        .map(([safeKey, answer_value]) => ({
+          question_id: safeKey.replace('q_', '').replace(/_/g, '.'), // q_1_1 → 1.1
+          answer_value: answer_value as 1 | 5 | 10,
+        }));
 
       const response = await fetch(`/api/audits/${token}/submit`, {
         method: "POST",
@@ -212,29 +292,6 @@ export default function AuditFormPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading audit...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-red-600">Error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{error}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -252,10 +309,10 @@ export default function AuditFormPage() {
             </p>
             <div className="bg-blue-50 p-4 rounded">
               <p className="text-sm text-blue-900">
-                <strong>Audit ID:</strong> {audit?.id}
+                <strong>Audit ID:</strong> {audit.id}
               </p>
               <p className="text-sm text-blue-900 mt-1">
-                <strong>Property:</strong> {audit?.property_address}
+                <strong>Property:</strong> {audit.property_address}
               </p>
             </div>
           </CardContent>
@@ -305,19 +362,19 @@ export default function AuditFormPage() {
           <CardContent className="space-y-2">
             <div>
               <span className="text-sm text-gray-600">Client Name:</span>
-              <p className="font-medium">{audit?.client_name}</p>
+              <p className="font-medium">{audit.client_name}</p>
             </div>
             <div>
               <span className="text-sm text-gray-600">Property Address:</span>
-              <p className="font-medium">{audit?.property_address}</p>
+              <p className="font-medium">{audit.property_address}</p>
             </div>
             <div>
               <span className="text-sm text-gray-600">Risk Audit Tier:</span>
-              <p className="font-medium">{audit?.risk_audit_tier.replace("_", " ").toUpperCase()}</p>
+              <p className="font-medium">{audit.risk_audit_tier.replace("_", " ").toUpperCase()}</p>
             </div>
             <div>
               <span className="text-sm text-gray-600">Conducted By:</span>
-              <p className="font-medium">{audit?.conducted_by}</p>
+              <p className="font-medium">{audit.conducted_by}</p>
             </div>
           </CardContent>
         </Card>
@@ -397,7 +454,7 @@ export default function AuditFormPage() {
                 </CardHeader>
                 <CardContent>
                   <Controller
-                    name={question.id as any}
+                    name={`q_${question.id.replace(/\./g, '_')}` as any}
                     control={control}
                     render={({ field }) => (
                       <div role="radiogroup" aria-label={question.text} aria-required="true">
@@ -408,10 +465,7 @@ export default function AuditFormPage() {
                               id={`${question.id}-${option.value}`}
                               value={option.value}
                               checked={field.value === option.value}
-                              onChange={(e) => {
-                                const numValue = parseInt(e.target.value, 10);
-                                field.onChange(numValue);
-                              }}
+                              onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
                               className="mt-1 h-4 w-4 cursor-pointer"
                               aria-label={`Score ${option.value}: ${option.label}`}
                             />
@@ -426,9 +480,9 @@ export default function AuditFormPage() {
                       </div>
                     )}
                   />
-                  {errors[question.id as keyof typeof errors] && (
+                  {errors[`q_${question.id.replace(/\./g, '_')}` as keyof typeof errors] && (
                     <p className="text-sm text-red-600 mt-2" role="alert" aria-live="polite">
-                      {errors[question.id as keyof typeof errors]?.message as string}
+                      {errors[`q_${question.id.replace(/\./g, '_')}` as keyof typeof errors]?.message as string}
                     </p>
                   )}
                 </CardContent>

@@ -113,10 +113,21 @@ All core functionality has been implemented and is ready for testing:
 - **Email Notifications**: Optional feature for future implementation
 - **Advanced Analytics**: Historical data and trends
 
-## Documentation
+## Technical Notes
 
-- [Environment Setup](docs/environment-setup.md)
-- [Development Prompt](docs/development-prompt.md)
+### ⚠️ React Hook Form Field Names
+**Important**: Do NOT use dots (`.`) in field names with react-hook-form.
+
+Field names like `"1.1"` are interpreted as nested paths `{ 1: { 1: value } }`, causing form state corruption.
+
+**Solution implemented**:
+- Display: `Q1.1` (user-facing)
+- Field name: `q_1_1` (internal, dots replaced with underscores)
+- Convert back when submitting to API: `q_1_1` → `1.1`
+
+This ensures proper form state management and prevents the 33-field bug.
+
+**Note**: `/docs` folder is in `.gitignore` for personal documentation.
 
 ## License
 
