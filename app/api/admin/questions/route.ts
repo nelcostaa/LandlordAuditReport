@@ -41,7 +41,8 @@ export async function GET(request: Request) {
     const tier = searchParams.get("tier");
     const activeOnly = searchParams.get("active") !== "false";
 
-    // Single optimized query with JOINs - 51 queries reduced to 1
+    // Optimized query using subqueries to avoid Cartesian product
+    // Previously caused 9 duplicates (3 options × 3 examples = 9)
     let result;
     
     if (category && category !== "all") {
@@ -49,34 +50,39 @@ export async function GET(request: Request) {
         SELECT 
           qt.*,
           COALESCE(
-            json_agg(
-              jsonb_build_object(
-                'id', qao.id,
-                'option_text', qao.option_text,
-                'score_value', qao.score_value,
-                'option_order', qao.option_order,
-                'is_example', qao.is_example
-              ) ORDER BY qao.option_order
-            ) FILTER (WHERE qao.id IS NOT NULL),
+            (
+              SELECT json_agg(
+                jsonb_build_object(
+                  'id', qao.id,
+                  'option_text', qao.option_text,
+                  'score_value', qao.score_value,
+                  'option_order', qao.option_order,
+                  'is_example', qao.is_example
+                ) ORDER BY qao.option_order
+              )
+              FROM question_answer_options qao
+              WHERE qao.question_template_id = qt.id
+            ),
             '[]'
           ) as answer_options,
           COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'id', qse.id,
-                'score_level', qse.score_level,
-                'reason_text', qse.reason_text,
-                'report_action', qse.report_action
+            (
+              SELECT json_agg(
+                jsonb_build_object(
+                  'id', qse.id,
+                  'score_level', qse.score_level,
+                  'reason_text', qse.reason_text,
+                  'report_action', qse.report_action
+                )
               )
-            ) FILTER (WHERE qse.id IS NOT NULL),
+              FROM question_score_examples qse
+              WHERE qse.question_template_id = qt.id
+            ),
             '[]'
           ) as score_examples
         FROM question_templates qt
-        LEFT JOIN question_answer_options qao ON qt.id = qao.question_template_id
-        LEFT JOIN question_score_examples qse ON qt.id = qse.question_template_id
         WHERE qt.is_active = TRUE
           AND qt.category = ${category}
-        GROUP BY qt.id
         ORDER BY qt.category, qt.question_number
       `;
     } else {
@@ -84,33 +90,38 @@ export async function GET(request: Request) {
         SELECT 
           qt.*,
           COALESCE(
-            json_agg(
-              jsonb_build_object(
-                'id', qao.id,
-                'option_text', qao.option_text,
-                'score_value', qao.score_value,
-                'option_order', qao.option_order,
-                'is_example', qao.is_example
-              ) ORDER BY qao.option_order
-            ) FILTER (WHERE qao.id IS NOT NULL),
+            (
+              SELECT json_agg(
+                jsonb_build_object(
+                  'id', qao.id,
+                  'option_text', qao.option_text,
+                  'score_value', qao.score_value,
+                  'option_order', qao.option_order,
+                  'is_example', qao.is_example
+                ) ORDER BY qao.option_order
+              )
+              FROM question_answer_options qao
+              WHERE qao.question_template_id = qt.id
+            ),
             '[]'
           ) as answer_options,
           COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'id', qse.id,
-                'score_level', qse.score_level,
-                'reason_text', qse.reason_text,
-                'report_action', qse.report_action
+            (
+              SELECT json_agg(
+                jsonb_build_object(
+                  'id', qse.id,
+                  'score_level', qse.score_level,
+                  'reason_text', qse.reason_text,
+                  'report_action', qse.report_action
+                )
               )
-            ) FILTER (WHERE qse.id IS NOT NULL),
+              FROM question_score_examples qse
+              WHERE qse.question_template_id = qt.id
+            ),
             '[]'
           ) as score_examples
         FROM question_templates qt
-        LEFT JOIN question_answer_options qao ON qt.id = qao.question_template_id
-        LEFT JOIN question_score_examples qse ON qt.id = qse.question_template_id
         WHERE qt.is_active = TRUE
-        GROUP BY qt.id
         ORDER BY qt.category, qt.question_number
       `;
     }
