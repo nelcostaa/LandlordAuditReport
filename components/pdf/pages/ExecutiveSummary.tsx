@@ -173,7 +173,7 @@ export const ExecutiveSummary = ({ data, reportId, criticalFindings }: Executive
             <Text style={[styles.riskScore, { color: getColorForTrafficLight(overallColor) }]}>
               {formatScore(data.overallScore)}
             </Text>
-            <TrafficLight color={overallColor} size={36} />
+            <TrafficLight color={overallColor} size={24} />
           </View>
         </View>
         
