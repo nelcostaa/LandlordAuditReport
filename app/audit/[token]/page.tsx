@@ -476,6 +476,11 @@ function AuditFormContent({
                       </Badge>
                     )}
                   </div>
+                  {question.motivation_learning_point && (
+                    <CardDescription className="mt-3 italic text-gray-600 leading-relaxed">
+                      {question.motivation_learning_point}
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <Controller

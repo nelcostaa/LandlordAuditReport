@@ -31,6 +31,7 @@ export async function GET(
         qt.question_type,
         qt.weight,
         qt.is_critical,
+        qt.motivation_learning_point,
         json_agg(
           jsonb_build_object(
             'value', qao.score_value,
@@ -63,6 +64,7 @@ export async function GET(
       tiers: [tier],
       weight: parseFloat(row.weight),
       options: row.options || [],
+      motivation_learning_point: row.motivation_learning_point,
     }));
 
     console.log('✅ Returning', questions.length, 'questions\n');

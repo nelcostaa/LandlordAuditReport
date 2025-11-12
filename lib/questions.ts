@@ -13,6 +13,7 @@ export interface Question {
     value: 1 | 5 | 10;
     label: string;
   }[];
+  motivation_learning_point?: string;
 }
 
 export const CATEGORIES = {
