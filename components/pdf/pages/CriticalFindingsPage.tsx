@@ -109,7 +109,7 @@ export const CriticalFindingsPage = ({ criticalQuestions }: CriticalFindingsPage
       <Text style={globalStyles.h1}>Critical Findings Summary</Text>
       
       {criticalQuestions.length > 0 ? (
-        <>
+        <View>
           <View style={styles.alertBox}>
             <Text style={styles.alertTitle}>
               ⚠ URGENT: {criticalQuestions.length} Critical Non-Compliance Issue{criticalQuestions.length > 1 ? 's' : ''} Identified
@@ -148,7 +148,7 @@ export const CriticalFindingsPage = ({ criticalQuestions }: CriticalFindingsPage
               </View>
             </View>
           ))}
-        </>
+        </View>
       ) : (
         <View style={{ marginTop: 30, padding: 20, backgroundColor: '#f0fdf4', borderWidth: 2, borderColor: COLORS.darkGreen }}>
           <Text style={{ fontSize: 13, fontFamily: 'Helvetica-Bold', color: COLORS.darkGreen, marginBottom: 8 }}>

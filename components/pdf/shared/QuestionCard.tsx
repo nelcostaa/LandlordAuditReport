@@ -86,10 +86,10 @@ export const QuestionCard = ({ question }: QuestionCardProps) => (
     
     {/* Comment Section (if exists) */}
     {question.comment ? (
-      <>
+      <View>
         <Text style={styles.sectionLabel}>Comment:</Text>
         <Text style={styles.contentText}>• {question.comment}</Text>
-      </>
+      </View>
     ) : null}
   </View>
 );

@@ -77,7 +77,7 @@ export const DetailedResultsPage = ({
         ✓ Excellent! You have no critical issues. All questions scored above the red threshold.
       </Text>
     ) : (
-      <>
+      <View>
         <Text style={styles.sectionIntro}>
           These questions received low scores (1-3) and require immediate attention. 
           Critical compliance issues that could result in fines or legal action.
@@ -86,7 +86,7 @@ export const DetailedResultsPage = ({
         {redQuestions.map((question, idx) => (
           <QuestionCard key={`red-${question.number}-${idx}`} question={question} />
         ))}
-      </>
+      </View>
     )}
     
     {/* Orange Questions Section */}
@@ -97,7 +97,7 @@ export const DetailedResultsPage = ({
         ✓ Great! You have no medium-level issues. All questions scored either high (green) or are addressed above.
       </Text>
     ) : (
-      <>
+      <View>
         <Text style={styles.sectionIntro}>
           These questions received medium scores (4-6) and should be improved. 
           Areas that need attention to avoid potential legal issues.
@@ -106,7 +106,7 @@ export const DetailedResultsPage = ({
         {orangeQuestions.map((question, idx) => (
           <QuestionCard key={`orange-${question.number}-${idx}`} question={question} />
         ))}
-      </>
+      </View>
     )}
     
     {/* Green Questions Section */}
@@ -117,7 +117,7 @@ export const DetailedResultsPage = ({
         No green-scoring answers recorded.
       </Text>
     ) : (
-      <>
+      <View>
         <Text style={styles.sectionIntro}>
           These questions received high scores (7-10) and demonstrate good compliance practices. 
           Well-managed areas that serve as examples of proper procedures.
@@ -126,7 +126,7 @@ export const DetailedResultsPage = ({
         {greenQuestions.map((question, idx) => (
           <QuestionCard key={`green-${question.number}-${idx}`} question={question} />
         ))}
-      </>
+      </View>
     )}
     
     <PageFooter />
