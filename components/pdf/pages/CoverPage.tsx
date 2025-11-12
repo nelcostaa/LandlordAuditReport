@@ -116,7 +116,7 @@ export const CoverPage = ({
         <View style={{ width: '100%', height: 1, backgroundColor: COLORS.lightGray, marginBottom: 20 }} />
         
         <View style={styles.gradientBar}>
-          <Text style={styles.gradientBarText}>LANDLORD RISK AUDIT</Text>
+          <Text style={styles.gradientBarText}>COMPLIANCE ASSESSMENT</Text>
         </View>
         
         <View style={styles.propertyInfo}>

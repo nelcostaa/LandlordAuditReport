@@ -118,6 +118,15 @@ async function generateTestPDF() {
     
     // 8. Render PDF
     console.log('\n🔄 Rendering PDF document...');
+    console.log('   DEBUG: Checking data for Executive Summary:');
+    console.log(`   - Report ID will be: LRA-${reportData.auditEndDate.getFullYear()}-XX-XXXXXX`);
+    console.log(`   - Property: ${reportData.propertyAddress}`);
+    console.log(`   - Landlord: ${reportData.landlordName}`);
+    console.log(`   - Auditor: ${reportData.auditorName}`);
+    console.log(`   - Overall Score: ${reportData.overallScore}`);
+    console.log(`   - Critical Findings: ${reportData.questionResponses.red.length}`);
+    console.log(`   - Subcategory Scores: ${reportData.subcategoryScores.length}`);
+    
     const startTime = Date.now();
     
     const pdfBuffer = await renderToBuffer(

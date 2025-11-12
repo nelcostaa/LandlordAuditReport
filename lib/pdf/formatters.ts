@@ -120,8 +120,8 @@ export function transformAuditToReportData(
   return {
     // Header
     propertyAddress: audit.property_address,
-    auditStartDate: new Date(audit.created_at),
-    auditEndDate: new Date(audit.submitted_at || audit.created_at),
+    auditStartDate: new Date(audit.submitted_at || audit.created_at), // When landlord submitted
+    auditEndDate: new Date(), // When report is generated (NOW)
     landlordName: audit.client_name,
     auditorName: audit.conducted_by,
     
