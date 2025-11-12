@@ -5,9 +5,9 @@ import { COLORS } from '@/lib/pdf/styles';
 
 const styles = StyleSheet.create({
   card: {
-    marginTop: 15,
-    marginBottom: 25,
-    paddingBottom: 10,
+    marginTop: 8,
+    marginBottom: 23,
+    paddingBottom: 5,
   },
   row: {
     flexDirection: 'row',
