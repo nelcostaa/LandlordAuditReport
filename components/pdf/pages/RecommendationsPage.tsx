@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 10,
     justifyContent: 'center',
+    lineHeight: 1,
   },
   tableCellLeft: {
     width: '35%',
@@ -42,10 +43,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     fontSize: 11,
     marginBottom: 3,
+    lineHeight: 1,
   },
   score: {
     fontSize: 10,
     color: COLORS.mediumGray,
+    lineHeight: 1,
   },
   suggestion: {
     marginBottom: 4,

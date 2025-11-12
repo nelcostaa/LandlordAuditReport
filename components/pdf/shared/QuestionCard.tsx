@@ -9,6 +9,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.lightGray,
     paddingVertical: 5,
@@ -17,10 +18,12 @@ const styles = StyleSheet.create({
     width: 50,
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
+    lineHeight: 1,
   },
   questionText: {
     flex: 1,
     fontSize: 11,
+    lineHeight: 1,
   },
   scoreIcon: {
     width: 75,

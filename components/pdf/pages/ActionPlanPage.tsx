@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
   },
   actionItem: {
     flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     paddingVertical: 2,
     paddingHorizontal: 6,
+    lineHeight: 1,
   },
   actionText: {
     flex: 1,

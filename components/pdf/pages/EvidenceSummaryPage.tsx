@@ -28,18 +28,21 @@ const styles = StyleSheet.create({
   categoryCell: {
     width: '50%',
     fontSize: 10,
-    textAlign: 'center', // Horizontal centering
+    textAlign: 'center',
+    lineHeight: 1,
   },
   statusCell: {
     width: '25%',
     fontSize: 10,
     textAlign: 'center',
+    lineHeight: 1,
   },
   notesCell: {
     width: '25%',
     fontSize: 9,
     fontFamily: 'Helvetica-Oblique',
-    textAlign: 'center', // Horizontal centering
+    textAlign: 'center',
+    lineHeight: 1,
   },
   noteBox: {
     marginTop: 20,

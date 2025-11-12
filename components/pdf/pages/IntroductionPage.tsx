@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 11,
+    lineHeight: 1,
   },
   bulletList: {
     marginLeft: 20,

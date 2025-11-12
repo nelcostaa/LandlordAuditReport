@@ -55,11 +55,13 @@ const styles = StyleSheet.create({
     width: 80,
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
+    lineHeight: 1,
   },
   scoreDescription: {
     flex: 1,
     fontSize: 10,
     marginLeft: 15,
+    lineHeight: 1,
   },
 });
 

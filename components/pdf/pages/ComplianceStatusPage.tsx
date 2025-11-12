@@ -36,19 +36,21 @@ const styles = StyleSheet.create({
   requirementCell: {
     width: '45%',
     fontSize: 10,
-    textAlign: 'center', // Horizontal centering
+    textAlign: 'center',
+    lineHeight: 1,
   },
   statusCell: {
     width: '15%',
     fontSize: 10,
     fontFamily: 'Helvetica-Bold',
     textAlign: 'center',
+    lineHeight: 1,
   },
   actionCell: {
     width: '40%',
     fontSize: 9,
     lineHeight: 1.3,
-    textAlign: 'center', // Horizontal centering
+    textAlign: 'center',
   },
   riskBox: {
     marginTop: 20,
