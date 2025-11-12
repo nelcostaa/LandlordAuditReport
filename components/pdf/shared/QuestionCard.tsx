@@ -63,7 +63,7 @@ interface QuestionCardProps {
 }
 
 export const QuestionCard = ({ question }: QuestionCardProps) => (
-  <View style={styles.card}>
+  <View style={styles.card} wrap={false}>
     {/* Question Header Row */}
     <View style={styles.row}>
       <Text style={styles.questionNumber}>Q{question.number}</Text>
