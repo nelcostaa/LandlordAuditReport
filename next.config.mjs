@@ -11,5 +11,6 @@ const nextConfig = {
   },
 };
 
+// Force deployment trigger
 export default nextConfig;
 
