@@ -160,7 +160,7 @@ const ServicesTable = ({ services }: { services: ServiceRecommendation[] }) => {
         <View key={index} style={styles.tableRow} wrap={false}>
           <View style={[styles.tableCell, styles.tableCellLeft]}>
             <Text style={{ fontSize: 10 }}>
-              {service.category}/{service.subcategory}
+              {service.lowScoringArea}
             </Text>
           </View>
           <View style={[styles.tableCell, styles.tableCellRight]}>

@@ -3,7 +3,6 @@ import { Document } from '@react-pdf/renderer';
 import { CoverPage } from './pages/CoverPage';
 import { ExecutiveSummary } from './pages/ExecutiveSummary';
 import { CriticalFindingsPage } from './pages/CriticalFindingsPage';
-import { TableOfContents } from './pages/TableOfContents';
 import { MethodologyPage } from './pages/MethodologyPage';
 import { RiskRatingPage } from './pages/RiskRatingPage';
 import { ComplianceStatusPage } from './pages/ComplianceStatusPage';
