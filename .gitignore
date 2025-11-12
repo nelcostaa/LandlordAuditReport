@@ -45,3 +45,6 @@ next-env.d.ts
 
 # PDF cache
 .cache/
+
+# Test PDFs
+test-report.pdf
