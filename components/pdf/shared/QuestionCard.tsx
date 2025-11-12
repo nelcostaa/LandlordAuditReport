@@ -85,12 +85,12 @@ export const QuestionCard = ({ question }: QuestionCardProps) => (
     <Text style={styles.contentText}>• {question.answer}</Text>
     
     {/* Comment Section (if exists) */}
-    {question.comment && (
+    {question.comment ? (
       <>
         <Text style={styles.sectionLabel}>Comment:</Text>
         <Text style={styles.contentText}>• {question.comment}</Text>
       </>
-    )}
+    ) : null}
   </View>
 );
 

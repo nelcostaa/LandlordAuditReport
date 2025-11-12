@@ -229,14 +229,14 @@ export const ExecutiveSummary = ({ data, reportId, criticalFindings }: Executive
       </View>
       
       {/* Critical Findings */}
-      {criticalFindings.length > 0 && (
+      {criticalFindings.length > 0 ? (
         <View style={styles.criticalBox}>
           <Text style={styles.criticalTitle}>⚠ CRITICAL FINDINGS REQUIRING IMMEDIATE ACTION</Text>
           {criticalFindings.map((finding, idx) => (
             <Text key={idx} style={styles.criticalItem}>• {finding}</Text>
           ))}
         </View>
-      )}
+      ) : null}
       
       {/* Auditor's Opinion */}
       <View style={{ marginTop: 20 }}>

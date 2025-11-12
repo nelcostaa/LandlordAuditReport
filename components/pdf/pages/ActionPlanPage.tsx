@@ -91,7 +91,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
       </View>
       
       {/* Immediate Actions (0-7 days) */}
-      {immediateActions.length > 0 && (
+      {immediateActions.length > 0 ? (
         <View style={styles.timelineSection}>
           <View wrap={false}>
             <View style={styles.timelineHeader}>
@@ -112,10 +112,10 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </View>
           ))}
         </View>
-      )}
+      ) : null}
       
       {/* Short-term Actions (30 days) */}
-      {shortTermActions.length > 0 && (
+      {shortTermActions.length > 0 ? (
         <View style={styles.timelineSection}>
           <View wrap={false}>
             <View style={styles.timelineHeader}>
@@ -136,10 +136,10 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </View>
           ))}
         </View>
-      )}
+      ) : null}
       
       {/* Medium-term Actions (90 days) */}
-      {mediumTermActions.length > 0 && (
+      {mediumTermActions.length > 0 ? (
         <View style={styles.timelineSection}>
           <View wrap={false}>
             <View style={styles.timelineHeader}>
@@ -160,10 +160,10 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </View>
           ))}
         </View>
-      )}
+      ) : null}
       
       {/* No actions needed */}
-      {immediateActions.length === 0 && shortTermActions.length === 0 && mediumTermActions.length === 0 && (
+      {immediateActions.length === 0 && shortTermActions.length === 0 && mediumTermActions.length === 0 ? (
         <View style={{ marginTop: 30, padding: 20, backgroundColor: '#f0fdf4', borderWidth: 2, borderColor: COLORS.darkGreen }}>
           <Text style={{ fontSize: 12, fontFamily: 'Helvetica-Bold', color: COLORS.darkGreen }}>
             ✓ Excellent Compliance Status
@@ -173,7 +173,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             conduct regular reviews to ensure ongoing compliance.
           </Text>
         </View>
-      )}
+      ) : null}
       
       <PageFooter />
     </Page>

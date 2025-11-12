@@ -210,11 +210,11 @@ export const ComplianceStatusPage = ({ data }: ComplianceStatusPageProps) => {
             <View key={idx} style={styles.tableRow} wrap={false}>
               <View style={styles.requirementCell}>
                 <Text style={{ fontFamily: 'Helvetica-Bold', marginBottom: 3 }}>{item.requirement}</Text>
-                {item.penalty && (
+                {item.penalty ? (
                   <Text style={{ fontSize: 8, color: COLORS.red, marginTop: 2 }}>
                     Penalty: {item.penalty}
                   </Text>
-                )}
+                ) : null}
               </View>
               <Text style={[styles.statusCell, { color: statusColor }]}>
                 {item.status}
@@ -226,7 +226,7 @@ export const ComplianceStatusPage = ({ data }: ComplianceStatusPageProps) => {
       </View>
       
       {/* Risk Warning if critical non-compliance */}
-      {failCount > 0 && (
+      {failCount > 0 ? (
         <View style={[styles.riskBox, { borderLeftColor: COLORS.red }]} wrap={false}>
           <Text style={[styles.riskTitle, { color: COLORS.red }]}>
             ⚠ CRITICAL: {failCount} Statutory Violation{failCount > 1 ? 's' : ''}
@@ -237,7 +237,7 @@ export const ComplianceStatusPage = ({ data }: ComplianceStatusPageProps) => {
             Urgent remediation within 7 days is required. Professional legal advice is strongly recommended.
           </Text>
         </View>
-      )}
+      ) : null}
       
       <PageFooter />
     </Page>
