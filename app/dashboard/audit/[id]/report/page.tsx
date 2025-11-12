@@ -222,25 +222,23 @@ export default function ReportPreviewPage() {
           <CardTitle>About the PDF Report</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p>
-            The PDF report includes a comprehensive analysis of the landlord audit results, including:
+          <p className="text-gray-700">
+            This comprehensive PDF report transforms audit data into actionable insights that protect your business and demonstrate compliance:
           </p>
           <ul className="list-disc list-inside space-y-2 text-gray-700">
-            <li>Professional cover page with audit metadata and date range</li>
-            <li>Executive Summary with overall compliance score, risk classification, and compliance overview table</li>
-            <li>Introduction and methodology with traffic light scoring system explanation</li>
-            <li>Risk Rating page with tier classifications (Tier 0-4)</li>
-            <li>Results page with category and subcategory score breakdowns</li>
-            <li>Recommendations page with prioritized actions by impact level (Legal Exposure, Tribunal Risk, Best Practice)</li>
-            <li>Legal Compliance Status with statutory requirements assessment</li>
-            <li>Evidence Summary documenting compliance across all areas</li>
-            <li>Action Plan with prioritized timeline (0-7 days, 30 days, 90 days)</li>
-            <li>Detailed Results with complete question-by-question breakdown, answers, and comments organized by score level (Red/Orange/Green)</li>
+            <li><strong>Identify legal risks instantly</strong> - See your overall compliance score and risk tier at a glance to understand exposure to prosecution, fines, or prohibition orders</li>
+            <li><strong>Know exactly what to fix first</strong> - Prioritized action plan tells you which issues require immediate attention (0-7 days) vs. medium-term improvements (30-90 days)</li>
+            <li><strong>Protect against prosecution</strong> - Clear documentation of statutory compliance status shows you&apos;re meeting legal obligations and acting on identified gaps</li>
+            <li><strong>Avoid tribunal disputes</strong> - Systematic evidence tracking demonstrates due diligence in property management and tenant communications</li>
+            <li><strong>Understand your scoring</strong> - Traffic light system (Red/Orange/Green) makes it easy to see which areas are critical vs. performing well</li>
+            <li><strong>Get specific recommendations</strong> - Each low-scoring area includes targeted actions and suggested improvements, not just problems</li>
+            <li><strong>Track improvements over time</strong> - Detailed question-by-question breakdown serves as a baseline for future audits and demonstrates progress</li>
+            <li><strong>Professional documentation</strong> - Court-ready report suitable for presenting to solicitors, insurers, or council inspectors if needed</li>
           </ul>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> The first generation may take 3-5 seconds. Subsequent downloads 
-              will be instant thanks to caching. The report is cached for 24 hours after generation.
+              <strong>Tip:</strong> First generation takes 3-5 seconds. After that, downloads are instant for 24 hours. 
+              Share this report with your legal advisor or use it to demonstrate compliance to your insurer.
             </p>
           </div>
         </CardContent>

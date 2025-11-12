@@ -103,50 +103,67 @@ export async function GET(
     }
     
     // 5. Fetch questions for this tier
+    console.log(`[PDF] Step 5: Fetching questions for tier ${audit.risk_audit_tier}...`);
     let questions: any[] = [];
     try {
       const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const questionsResponse = await fetch(
-        `${baseUrl}/api/questions/for-tier/${audit.risk_audit_tier}`
-      );
+      const questionsUrl = `${baseUrl}/api/questions/for-tier/${audit.risk_audit_tier}`;
+      console.log(`[PDF] Fetching from: ${questionsUrl}`);
+      
+      const questionsResponse = await fetch(questionsUrl);
+      console.log(`[PDF] Questions API response status: ${questionsResponse.status}`);
       
       if (questionsResponse.ok) {
         const questionsData = await questionsResponse.json();
         questions = questionsData.questions || [];
+        console.log(`[PDF] Fetched ${questions.length} questions from API`);
+      } else {
+        const errorText = await questionsResponse.text();
+        console.error(`[PDF] Questions API error: ${errorText}`);
       }
     } catch (error) {
       console.error('[PDF] Error fetching questions:', error);
+      console.error('[PDF] Error details:', (error as Error).message);
     }
     
     if (questions.length === 0) {
-      // Fallback to static questions
+      console.log('[PDF] No questions from API, falling back to static questions...');
       const { getQuestionsByTier } = await import('@/lib/questions');
       questions = getQuestionsByTier(audit.risk_audit_tier);
+      console.log(`[PDF] Loaded ${questions.length} static fallback questions`);
     }
     
-    console.log(`[PDF] Loaded ${questions.length} questions for tier ${audit.risk_audit_tier}`);
+    console.log(`[PDF] ✓ Total questions loaded: ${questions.length} for tier ${audit.risk_audit_tier}`);
     
     // 6. Calculate scores
-    const scores = calculateAuditScores(responses, questions);
-    console.log(`[PDF] Calculated scores: Overall ${scores.overallScore.score}`);
+    console.log(`[PDF] Step 6: Calculating scores with ${responses.length} responses and ${questions.length} questions...`);
+    try {
+      const scores = calculateAuditScores(responses, questions);
+      console.log(`[PDF] ✓ Calculated scores: Overall ${scores.overallScore.score}, Risk Level: ${scores.overallScore.riskLevel}`);
     
-    // 7. Transform data to report format
-    const reportData = transformAuditToReportData(audit, responses, questions, scores);
-    console.log(`[PDF] Transformed data: ${reportData.questionResponses.red.length} red, ${reportData.questionResponses.orange.length} orange, ${reportData.questionResponses.green.length} green`);
+      // 7. Transform data to report format
+      console.log(`[PDF] Step 7: Transforming audit data to report format...`);
+      const reportData = transformAuditToReportData(audit, responses, questions, scores);
+      console.log(`[PDF] ✓ Transformed data:`);
+      console.log(`[PDF]   - Red questions: ${reportData.questionResponses.red.length}`);
+      console.log(`[PDF]   - Orange questions: ${reportData.questionResponses.orange.length}`);
+      console.log(`[PDF]   - Green questions: ${reportData.questionResponses.green.length}`);
+      console.log(`[PDF]   - Recommendations: ${Object.keys(reportData.recommendationsByCategory).length} categories`);
+      console.log(`[PDF]   - Subcategory scores: ${reportData.subcategoryScores.length}`);
     
     // 8. Generate charts in parallel
     // Charts removed from PDF (not rendering properly)
     
-    // 9. Render PDF
-    console.log('[PDF] Rendering PDF document...');
-    const pdfBuffer = await renderToBuffer(
-      React.createElement(ReportDocument, {
-        data: reportData,
-      }) as any
-    );
-    
-    const pdfSize = Math.round(pdfBuffer.length / 1024);
-    console.log(`[PDF] ✓ PDF rendered (${pdfSize} KB)`);
+      // 9. Render PDF
+      console.log('[PDF] Step 9: Rendering PDF document with React-PDF...');
+      const pdfBuffer = await renderToBuffer(
+        React.createElement(ReportDocument, {
+          data: reportData,
+        }) as any
+      );
+      
+      const pdfSize = Math.round(pdfBuffer.length / 1024);
+      console.log(`[PDF] ✓ PDF rendered successfully (${pdfSize} KB)`);
     
     // 10. Store in cache
     setCachedPDF(
@@ -173,15 +190,31 @@ export async function GET(
       },
     });
     
+    } catch (scoreError) {
+      console.error('[PDF] ❌ Score calculation failed:', scoreError);
+      throw scoreError;
+    }
+    
   } catch (error) {
     const errorTime = Date.now() - startTime;
-    console.error('[PDF] Generation error:', error);
+    console.error('[PDF] ❌ Generation error at step:', error);
+    console.error('[PDF] Error name:', (error as Error).name);
+    console.error('[PDF] Error message:', (error as Error).message);
     console.error('[PDF] Stack trace:', (error as Error).stack);
+    
+    // Check if it's a specific type of error
+    if ((error as Error).message.includes('options')) {
+      console.error('[PDF] ⚠️  This appears to be a question options error');
+    }
+    if ((error as Error).message.includes('undefined')) {
+      console.error('[PDF] ⚠️  This appears to be an undefined value error');
+    }
     
     return NextResponse.json(
       { 
         error: 'Failed to generate PDF report',
         details: (error as Error).message,
+        errorName: (error as Error).name,
         time: errorTime
       },
       { status: 500 }
