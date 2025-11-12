@@ -93,15 +93,17 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
       {/* Immediate Actions (0-7 days) */}
       {immediateActions.length > 0 && (
         <View style={styles.timelineSection}>
-          <View style={styles.timelineHeader}>
-            <Text style={[styles.timelineHeaderText, { color: COLORS.red }]}>
-              ⚠ IMMEDIATE ACTIONS (0-7 Days)
-            </Text>
-          </View>
-          <View style={{ paddingLeft: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.red }}>
-              Critical compliance issues exposing you to immediate fines or prosecution.
-            </Text>
+          <View wrap={false}>
+            <View style={styles.timelineHeader}>
+              <Text style={[styles.timelineHeaderText, { color: COLORS.red }]}>
+                ⚠ IMMEDIATE ACTIONS (0-7 Days)
+              </Text>
+            </View>
+            <View style={{ paddingLeft: 10, marginBottom: 10 }}>
+              <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.red }}>
+                Critical compliance issues exposing you to immediate fines or prosecution.
+              </Text>
+            </View>
           </View>
           {immediateActions.map((action, idx) => (
             <View key={idx} style={styles.actionItem}>
@@ -115,15 +117,17 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
       {/* Short-term Actions (30 days) */}
       {shortTermActions.length > 0 && (
         <View style={styles.timelineSection}>
-          <View style={styles.timelineHeader}>
-            <Text style={[styles.timelineHeaderText, { color: COLORS.orange }]}>
-              HIGH PRIORITY (30 Days)
-            </Text>
-          </View>
-          <View style={{ paddingLeft: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.orange }}>
-              Significant gaps that increase tribunal vulnerability and legal risk.
-            </Text>
+          <View wrap={false}>
+            <View style={styles.timelineHeader}>
+              <Text style={[styles.timelineHeaderText, { color: COLORS.orange }]}>
+                HIGH PRIORITY (30 Days)
+              </Text>
+            </View>
+            <View style={{ paddingLeft: 10, marginBottom: 10 }}>
+              <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.orange }}>
+                Significant gaps that increase tribunal vulnerability and legal risk.
+              </Text>
+            </View>
           </View>
           {shortTermActions.map((action, idx) => (
             <View key={idx} style={styles.actionItem}>
@@ -137,15 +141,17 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
       {/* Medium-term Actions (90 days) */}
       {mediumTermActions.length > 0 && (
         <View style={styles.timelineSection}>
-          <View style={styles.timelineHeader}>
-            <Text style={[styles.timelineHeaderText, { color: COLORS.darkGreen }]}>
-              MEDIUM PRIORITY (90 Days)
-            </Text>
-          </View>
-          <View style={{ paddingLeft: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.darkGreen }}>
-              Best practice improvements to strengthen overall compliance position.
-            </Text>
+          <View wrap={false}>
+            <View style={styles.timelineHeader}>
+              <Text style={[styles.timelineHeaderText, { color: COLORS.darkGreen }]}>
+                MEDIUM PRIORITY (90 Days)
+              </Text>
+            </View>
+            <View style={{ paddingLeft: 10, marginBottom: 10 }}>
+              <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.darkGreen }}>
+                Best practice improvements to strengthen overall compliance position.
+              </Text>
+            </View>
           </View>
           {mediumTermActions.map((action, idx) => (
             <View key={idx} style={styles.actionItem}>
