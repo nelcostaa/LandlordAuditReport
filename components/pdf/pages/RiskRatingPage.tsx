@@ -21,15 +21,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tierNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: 'Helvetica-Bold',
-    marginRight: 15,
-    width: 60,
+    marginRight: 12,
+    minWidth: 70,
+    lineHeight: 1,
   },
   tierTitle: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
     flex: 1,
+    lineHeight: 1,
   },
   tierDescription: {
     fontSize: 10,

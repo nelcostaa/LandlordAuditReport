@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontFamily: 'Helvetica-Bold',
+    lineHeight: 1,
   },
   scoreValue: {
     fontSize: 16,
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
     width: 50,
     textAlign: 'right',
+    lineHeight: 1,
   },
   categoryScoresContainer: {
     marginBottom: 20,
