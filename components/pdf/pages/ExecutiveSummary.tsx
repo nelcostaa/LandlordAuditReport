@@ -4,7 +4,7 @@ import { PageHeader } from '../shared/PageHeader';
 import { PageFooter } from '../shared/PageFooter';
 import { TrafficLight } from '../shared/TrafficLight';
 import { styles as globalStyles, COLORS, getTrafficLightColor, getColorForTrafficLight, formatScore } from '@/lib/pdf/styles';
-import { ReportData } from '@/lib/pdf/formatters';
+import { ReportData, formatReportDate } from '@/lib/pdf/formatters';
 
 const styles = StyleSheet.create({
   page: {
@@ -160,7 +160,7 @@ export const ExecutiveSummary = ({ data, reportId, criticalFindings }: Executive
         <View style={styles.metadataRow}>
           <Text style={styles.metadataLabel}>Audit Date:</Text>
           <Text style={styles.metadataValue}>
-            {data.auditEndDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+            {formatReportDate(data.auditEndDate)}
           </Text>
         </View>
       </View>
