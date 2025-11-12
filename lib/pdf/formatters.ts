@@ -17,6 +17,8 @@ export interface Recommendation {
   subcategory: string;
   score: number;
   suggestions: string[];
+  priority: 1 | 2 | 3 | 4; // 1=Critical, 2=High, 3=Medium, 4=Low
+  impact: 'Legal Exposure' | 'Tribunal Risk' | 'Best Practice' | 'Optimization';
 }
 
 export interface QuestionResponseData {
@@ -234,17 +236,42 @@ function generateRecommendationsByCategory(
     subcategoryActionsMap.get(key)!.push(action);
   });
   
-  // Create recommendations
+  // Create recommendations with priority
   subcategoryActionsMap.forEach((actions, key) => {
     const [category, subcategory] = key.split('|');
     const subcatScore = subcategoryScores.find(
       s => s.category === category && s.name === subcategory
     );
     
+    const score = subcatScore?.score || 0;
+    
+    // Determine priority based on score and action priority
+    let priority: 1 | 2 | 3 | 4 = 3;
+    let impact: 'Legal Exposure' | 'Tribunal Risk' | 'Best Practice' | 'Optimization' = 'Best Practice';
+    
+    if (actions.some(a => a.priority === 'critical')) {
+      priority = 1;
+      impact = 'Legal Exposure';
+    } else if (score <= 3) {
+      priority = 1;
+      impact = 'Legal Exposure';
+    } else if (actions.some(a => a.priority === 'high') || score <= 5) {
+      priority = 2;
+      impact = 'Tribunal Risk';
+    } else if (score <= 7) {
+      priority = 3;
+      impact = 'Best Practice';
+    } else {
+      priority = 4;
+      impact = 'Optimization';
+    }
+    
     const rec: Recommendation = {
       subcategory,
       score: subcatScore?.score || 0,
       suggestions: actions.map(a => a.recommendation),
+      priority,
+      impact,
     };
     
     // Map to correct category key

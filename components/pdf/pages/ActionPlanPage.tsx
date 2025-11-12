@@ -96,7 +96,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </Text>
           </View>
           <View style={{ paddingLeft: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 10, fontStyle: 'italic', color: COLORS.red }}>
+            <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.red }}>
               Critical compliance issues exposing you to immediate fines or prosecution.
             </Text>
           </View>
@@ -118,7 +118,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </Text>
           </View>
           <View style={{ paddingLeft: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 10, fontStyle: 'italic', color: COLORS.orange }}>
+            <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.orange }}>
               Significant gaps that increase tribunal vulnerability and legal risk.
             </Text>
           </View>
@@ -140,7 +140,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </Text>
           </View>
           <View style={{ paddingLeft: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 10, fontStyle: 'italic', color: COLORS.darkGreen }}>
+            <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Oblique', color: COLORS.darkGreen }}>
               Best practice improvements to strengthen overall compliance position.
             </Text>
           </View>

@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   tierImplication: {
     fontSize: 9,
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
     color: COLORS.mediumGray,
     marginTop: 5,
   },

@@ -74,36 +74,55 @@ const RecommendationTable = ({
     );
   }
   
+  // Sort by priority (1=highest)
+  const sortedRecs = [...recommendations].sort((a, b) => a.priority - b.priority);
+  
   return (
     <View style={styles.table}>
       <Text style={globalStyles.h3}>{title}</Text>
       
       {/* Table Header */}
       <View style={[styles.tableRow, styles.tableHeaderRow]}>
-        <View style={[styles.tableCell, styles.tableCellLeft]}>
+        <View style={[styles.tableCell, { width: '15%' }]}>
+          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9 }}>Priority</Text>
+        </View>
+        <View style={[styles.tableCell, { width: '30%' }]}>
           <Text style={{ fontFamily: 'Helvetica-Bold' }}>Subcategory</Text>
         </View>
-        <View style={[styles.tableCell, styles.tableCellRight]}>
-          <Text style={{ fontFamily: 'Helvetica-Bold' }}>Suggestions for Improvement</Text>
+        <View style={[styles.tableCell, { width: '55%' }]}>
+          <Text style={{ fontFamily: 'Helvetica-Bold' }}>Required Actions</Text>
         </View>
       </View>
       
       {/* Table Rows */}
-      {recommendations.map((rec, index) => (
-        <View key={index} style={styles.tableRow} wrap={false}>
-          <View style={[styles.tableCell, styles.tableCellLeft]}>
-            <Text style={styles.subcategoryName}>{rec.subcategory}</Text>
-            <Text style={styles.score}>Score: {rec.score.toFixed(1)}</Text>
-          </View>
-          <View style={[styles.tableCell, styles.tableCellRight]}>
-            {rec.suggestions.map((suggestion, idx) => (
-              <Text key={idx} style={styles.suggestion}>
-                • {suggestion}
+      {sortedRecs.map((rec, index) => {
+        const priorityLabel = rec.priority === 1 ? 'P1' : rec.priority === 2 ? 'P2' : rec.priority === 3 ? 'P3' : 'P4';
+        const priorityColor = rec.priority === 1 ? COLORS.red : rec.priority === 2 ? COLORS.orange : COLORS.darkGreen;
+        
+        return (
+          <View key={index} style={styles.tableRow} wrap={false}>
+            <View style={[styles.tableCell, { width: '15%' }]}>
+              <Text style={{ fontFamily: 'Helvetica-Bold', color: priorityColor, fontSize: 11 }}>
+                {priorityLabel}
               </Text>
-            ))}
+              <Text style={{ fontSize: 8, color: COLORS.mediumGray, marginTop: 2 }}>
+                {rec.impact}
+              </Text>
+            </View>
+            <View style={[styles.tableCell, { width: '30%' }]}>
+              <Text style={styles.subcategoryName}>{rec.subcategory}</Text>
+              <Text style={styles.score}>Score: {rec.score.toFixed(1)}</Text>
+            </View>
+            <View style={[styles.tableCell, { width: '55%' }]}>
+              {rec.suggestions.map((suggestion, idx) => (
+                <Text key={idx} style={styles.suggestion}>
+                  • {suggestion}
+                </Text>
+              ))}
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 };

@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
   sectionIntro: {
     fontSize: 11,
     marginBottom: 15,
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
     color: COLORS.mediumGray,
   },
   noQuestionsText: {

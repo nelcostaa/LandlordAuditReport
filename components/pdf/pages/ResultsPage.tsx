@@ -107,6 +107,14 @@ export const ResultsPage = ({ data, subcategoryChartUrl }: ResultsPageProps) => 
         </Text>
       </View>
       
+      <View style={{ marginVertical: 10, padding: 10, backgroundColor: '#f8f9fa' }}>
+        <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', marginBottom: 4 }}>Benchmarking Reference:</Text>
+        <Text style={{ fontSize: 9, lineHeight: 1.3 }}>
+          Industry Standard: 7.0+ (acceptable for insurance and licensing). Professional Target: 8.5+ (demonstrates 
+          robust compliance systems). Scores below 7.0 indicate areas requiring improvement to meet standard expectations.
+        </Text>
+      </View>
+      
       <View style={styles.chartContainer}>
         <Image src={subcategoryChartUrl} style={styles.chart} />
       </View>

@@ -222,7 +222,7 @@ export const ExecutiveSummary = ({ data, reportId, criticalFindings }: Executive
             <Text key={idx} style={styles.criticalItem}>• {finding}</Text>
           ))}
           {criticalFindings.length > 5 && (
-            <Text style={[styles.criticalItem, { fontStyle: 'italic', marginTop: 5 }]}>
+            <Text style={[styles.criticalItem, { fontFamily: 'Helvetica-Oblique', marginTop: 5 }]}>
               ...and {criticalFindings.length - 5} additional critical item(s). See Detailed Results section.
             </Text>
           )}
