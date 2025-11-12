@@ -104,7 +104,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </Text>
           </View>
           {immediateActions.map((action, idx) => (
-            <View key={idx} style={styles.actionItem} wrap={false}>
+            <View key={idx} style={styles.actionItem}>
               <Text style={[styles.priorityBadge, { color: COLORS.red }]}>CRITICAL</Text>
               <Text style={styles.actionText}>{action}</Text>
             </View>
@@ -126,7 +126,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </Text>
           </View>
           {shortTermActions.map((action, idx) => (
-            <View key={idx} style={styles.actionItem} wrap={false}>
+            <View key={idx} style={styles.actionItem}>
               <Text style={[styles.priorityBadge, { color: COLORS.orange }]}>HIGH</Text>
               <Text style={styles.actionText}>{action}</Text>
             </View>
@@ -148,7 +148,7 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
             </Text>
           </View>
           {mediumTermActions.map((action, idx) => (
-            <View key={idx} style={styles.actionItem} wrap={false}>
+            <View key={idx} style={styles.actionItem}>
               <Text style={[styles.priorityBadge, { color: COLORS.darkGreen }]}>MEDIUM</Text>
               <Text style={styles.actionText}>{action}</Text>
             </View>
