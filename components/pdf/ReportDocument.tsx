@@ -94,17 +94,12 @@ export const ReportDocument = ({
         <CriticalFindingsPage criticalQuestions={data.questionResponses.red} />
       ) : null}
       
-      {/* Methodology & Scope */}
+      {/* TEMPORARY: Second binary test - commenting these
       <MethodologyPage data={data} auditScope={auditScope} />
-      
-      {/* Risk Rating Definition */}
       <RiskRatingPage />
-      
-      {/* Legal Compliance Status */}
       <ComplianceStatusPage data={data} />
-      
-      {/* Evidence Summary - FASE 2 */}
       <EvidenceSummaryPage data={data} />
+      */}
       
       {/* TEMPORARY: Commented out for debugging
       <IntroductionPage />
