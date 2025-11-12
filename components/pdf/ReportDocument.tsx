@@ -106,24 +106,17 @@ export const ReportDocument = ({
       {/* Evidence Summary - FASE 2 */}
       <EvidenceSummaryPage data={data} />
       
-      {/* Introduction Pages (3 pages) */}
+      {/* TEMPORARY: Commented out for debugging
       <IntroductionPage />
-      
-      {/* Results Pages */}
       <ResultsPage data={data} />
-      
-      {/* Recommendations Pages (3 pages) */}
       <RecommendationsPage data={data} />
-      
-      {/* Action Plan with Timeline - NEW */}
       <ActionPlanPage data={data} />
-      
-      {/* Detailed Results Pages (variable) */}
       <DetailedResultsPage
         redQuestions={data.questionResponses.red}
         orangeQuestions={data.questionResponses.orange}
         greenQuestions={data.questionResponses.green}
       />
+      */}
     </Document>
   );
 };
