@@ -40,8 +40,7 @@ interface ResultsPageProps {
 }
 
 export const ResultsPage = ({ data }: ResultsPageProps) => (
-  <>
-    <Page size="A4" style={styles.page}>
+  <Page size="A4" style={styles.page}>
       <PageHeader title="Landlord Risk Audit Report" />
       
       <Text style={globalStyles.h1}>The Results</Text>
@@ -85,7 +84,6 @@ export const ResultsPage = ({ data }: ResultsPageProps) => (
       </View>
       
       <PageFooter />
-    </Page>
-  </>
+  </Page>
 );
 

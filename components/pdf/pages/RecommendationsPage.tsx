@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    alignItems: 'center', // Vertical centering
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.lightGray,
     minHeight: 30,
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   tableCell: {
     padding: 8,
     fontSize: 10,
-    justifyContent: 'center', // Vertical centering for cell content
+    justifyContent: 'center',
   },
   tableCellLeft: {
     width: '35%',
@@ -70,7 +70,7 @@ const RecommendationTable = ({
       <View style={styles.table}>
         <Text style={globalStyles.h3}>{title}</Text>
         <Text style={{ fontSize: 11, marginTop: 10, color: COLORS.darkGreen }}>
-          ✓ All areas in this category are performing well. Continue maintaining current practices.
+          ✓ All areas in this category are performing well. No specific recommendations.
         </Text>
       </View>
     );
@@ -86,7 +86,7 @@ const RecommendationTable = ({
       {/* Table Header */}
       <View style={[styles.tableRow, styles.tableHeaderRow]}>
         <View style={[styles.tableCell, { width: '15%' }]}>
-          <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9 }}>Priority</Text>
+          <Text style={{ fontFamily: 'Helvetica-Bold' }}>Priority</Text>
         </View>
         <View style={[styles.tableCell, { width: '30%' }]}>
           <Text style={{ fontFamily: 'Helvetica-Bold' }}>Subcategory</Text>
@@ -156,17 +156,14 @@ const ServicesTable = ({ services }: { services: ServiceRecommendation[] }) => {
       {services.map((service, index) => (
         <View key={index} style={styles.tableRow} wrap={false}>
           <View style={[styles.tableCell, styles.tableCellLeft]}>
-            <Text style={{ fontSize: 10 }}>{service.lowScoringArea}</Text>
+            <Text style={{ fontSize: 10 }}>
+              {service.category}/{service.subcategory}
+            </Text>
           </View>
           <View style={[styles.tableCell, styles.tableCellRight]}>
             <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}>
               {service.suggestedService}
             </Text>
-            {service.tier && (
-              <Text style={{ fontSize: 9, color: COLORS.mediumGray, marginTop: 2 }}>
-                ({service.tier})
-              </Text>
-            )}
           </View>
         </View>
       ))}
@@ -175,61 +172,46 @@ const ServicesTable = ({ services }: { services: ServiceRecommendation[] }) => {
 };
 
 export const RecommendationsPage = ({ data }: RecommendationsPageProps) => (
-  <>
-    <Page size="A4" style={styles.page}>
-      <PageHeader title="Landlord Risk Audit Report" />
-      
-      <Text style={globalStyles.h1}>Recommended Actions</Text>
-      
-      <View style={globalStyles.paragraph}>
-        <Text>
-          Based on your audit results, the following actions are recommended to improve compliance 
-          and reduce risk. Priority should be given to areas with lower scores (red and orange).
-        </Text>
-      </View>
-      
-      <Text style={globalStyles.h2}>Suggestions for Improvement</Text>
-      
-      <RecommendationTable 
-        title="Documentation" 
-        recommendations={data.recommendationsByCategory.documentation}
-      />
-      
-      <PageFooter />
-    </Page>
+  <Page size="A4" style={styles.page}>
+    <PageHeader title="Landlord Risk Audit Report" />
     
-    <Page size="A4" style={styles.page}>
-      <PageHeader title="Landlord Risk Audit Report" />
-      
-      <RecommendationTable 
-        title="Landlord-Tenant Communication" 
-        recommendations={data.recommendationsByCategory.communication}
-      />
-      
-      <RecommendationTable 
-        title="Evidence Gathering Systems and Procedures" 
-        recommendations={data.recommendationsByCategory.evidenceGathering}
-      />
-      
-      <PageFooter />
-    </Page>
+    <Text style={globalStyles.h1}>Recommended Actions</Text>
     
-    <Page size="A4" style={styles.page}>
-      <PageHeader title="Landlord Risk Audit Report" />
-      
-      <Text style={globalStyles.h2}>Follow-on Products and Services</Text>
-      
-      <View style={globalStyles.paragraph}>
-        <Text>
-          The following professional services and products are recommended to address specific 
-          low-scoring areas identified in your audit:
-        </Text>
-      </View>
-      
-      <ServicesTable services={data.suggestedServices} />
-      
-      <PageFooter />
-    </Page>
-  </>
+    <View style={globalStyles.paragraph}>
+      <Text>
+        Based on your audit results, the following actions are recommended to improve compliance 
+        and reduce risk. Priority should be given to areas with lower scores (red and orange).
+      </Text>
+    </View>
+    
+    <Text style={globalStyles.h2}>Suggestions for Improvement</Text>
+    
+    <RecommendationTable 
+      title="Documentation" 
+      recommendations={data.recommendationsByCategory.documentation}
+    />
+    
+    <RecommendationTable 
+      title="Landlord-Tenant Communication" 
+      recommendations={data.recommendationsByCategory.communication}
+    />
+    
+    <RecommendationTable 
+      title="Evidence Gathering Systems and Procedures" 
+      recommendations={data.recommendationsByCategory.evidenceGathering}
+    />
+    
+    <Text style={globalStyles.h2}>Follow-on Products and Services</Text>
+    
+    <View style={globalStyles.paragraph}>
+      <Text>
+        The following professional services and products are recommended to address specific 
+        low-scoring areas identified in your audit:
+      </Text>
+    </View>
+    
+    <ServicesTable services={data.suggestedServices} />
+    
+    <PageFooter />
+  </Page>
 );
-
