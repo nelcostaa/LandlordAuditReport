@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     marginRight: 15, // Space between score and icon
   },
   riskTrafficLight: {
-    fontSize: 32, // Larger bullet for prominent card (proportional to 36px score)
+    marginLeft: 0,
   },
   riskStatus: {
     fontSize: 12,
@@ -90,13 +90,11 @@ const styles = StyleSheet.create({
   complianceStatus: {
     width: '20%',
     textAlign: 'center',
+    alignItems: 'center',
   },
   complianceStatusText: {
-    fontSize: 11, // For header text
+    fontSize: 11,
     fontFamily: 'Helvetica-Bold',
-  },
-  complianceStatusIcon: {
-    fontSize: 18, // Larger for bullet visibility
   },
   criticalBox: {
     marginTop: 20,
@@ -174,7 +172,7 @@ export const ExecutiveSummary = ({ data, reportId, criticalFindings }: Executive
             <Text style={[styles.riskScore, { color: getColorForTrafficLight(overallColor) }]}>
               {formatScore(data.overallScore)}
             </Text>
-            <TrafficLight color={overallColor} style={styles.riskTrafficLight} />
+            <TrafficLight color={overallColor} size={32} />
           </View>
         </View>
         
@@ -207,19 +205,19 @@ export const ExecutiveSummary = ({ data, reportId, criticalFindings }: Executive
         <View style={styles.complianceRow}>
           <Text style={styles.complianceCategory}>Documentation</Text>
           <Text style={styles.complianceScore}>{formatScore(data.categoryScores.documentation.score)}</Text>
-          <TrafficLight color={getTrafficLightColor(data.categoryScores.documentation.score)} style={[styles.complianceStatus, styles.complianceStatusIcon]} />
+          <TrafficLight color={getTrafficLightColor(data.categoryScores.documentation.score)} style={styles.complianceStatus} size={14} />
         </View>
         
         <View style={styles.complianceRow}>
           <Text style={styles.complianceCategory}>Landlord-Tenant Communication</Text>
           <Text style={styles.complianceScore}>{formatScore(data.categoryScores.communication.score)}</Text>
-          <TrafficLight color={getTrafficLightColor(data.categoryScores.communication.score)} style={[styles.complianceStatus, styles.complianceStatusIcon]} />
+          <TrafficLight color={getTrafficLightColor(data.categoryScores.communication.score)} style={styles.complianceStatus} size={14} />
         </View>
         
         <View style={styles.complianceRow}>
           <Text style={styles.complianceCategory}>Evidence Gathering Systems</Text>
           <Text style={styles.complianceScore}>{formatScore(data.categoryScores.evidenceGathering.score)}</Text>
-          <TrafficLight color={getTrafficLightColor(data.categoryScores.evidenceGathering.score)} style={[styles.complianceStatus, styles.complianceStatusIcon]} />
+          <TrafficLight color={getTrafficLightColor(data.categoryScores.evidenceGathering.score)} style={styles.complianceStatus} size={14} />
         </View>
       </View>
       

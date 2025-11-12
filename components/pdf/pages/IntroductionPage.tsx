@@ -99,7 +99,7 @@ export const IntroductionPage = () => (
     
     <View style={styles.section}>
       <View style={styles.trafficLightRow}>
-        <TrafficLight color="red" style={{ fontSize: 16 }} />
+        <TrafficLight color="red" size={18} />
         <Text style={styles.trafficLightText}>
           <Text style={{ fontFamily: 'Helvetica-Bold' }}>Red (1-3): </Text>
           Actions need to be taken immediately. You can be fined or tenants have power to claim money from you. 
@@ -108,7 +108,7 @@ export const IntroductionPage = () => (
       </View>
       
       <View style={styles.trafficLightRow}>
-        <TrafficLight color="orange" style={{ fontSize: 16 }} />
+        <TrafficLight color="orange" size={18} />
         <Text style={styles.trafficLightText}>
           <Text style={{ fontFamily: 'Helvetica-Bold' }}>Orange (4-6): </Text>
           Improvements need to be planned. Tenants will be able to win if you are taken to court. 
@@ -117,7 +117,7 @@ export const IntroductionPage = () => (
       </View>
       
       <View style={styles.trafficLightRow}>
-        <TrafficLight color="green" style={{ fontSize: 16 }} />
+        <TrafficLight color="green" size={18} />
         <Text style={styles.trafficLightText}>
           <Text style={{ fontFamily: 'Helvetica-Bold' }}>Green (7-10): </Text>
           Doing well in this area. Maintain regular inspection and continue good practices. 

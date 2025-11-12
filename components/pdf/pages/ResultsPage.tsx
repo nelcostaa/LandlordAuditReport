@@ -52,7 +52,7 @@ export const ResultsPage = ({ data }: ResultsPageProps) => (
         <Text style={[styles.scoreValue, { color: getColorForTrafficLight(getTrafficLightColor(data.overallScore)) }]}>
           {formatScore(data.overallScore)}
         </Text>
-        <TrafficLight color={getTrafficLightColor(data.overallScore)} />
+        <TrafficLight color={getTrafficLightColor(data.overallScore)} size={16} />
       </View>
       
       <Text style={globalStyles.h2}>Category Scores</Text>
@@ -63,7 +63,7 @@ export const ResultsPage = ({ data }: ResultsPageProps) => (
           <Text style={[styles.scoreValue, { color: getColorForTrafficLight(getTrafficLightColor(data.categoryScores.documentation.score)) }]}>
             {formatScore(data.categoryScores.documentation.score)}
           </Text>
-          <TrafficLight color={getTrafficLightColor(data.categoryScores.documentation.score)} />
+          <TrafficLight color={getTrafficLightColor(data.categoryScores.documentation.score)} size={16} />
         </View>
         
         <View style={styles.scoreRow}>
@@ -71,7 +71,7 @@ export const ResultsPage = ({ data }: ResultsPageProps) => (
           <Text style={[styles.scoreValue, { color: getColorForTrafficLight(getTrafficLightColor(data.categoryScores.communication.score)) }]}>
             {formatScore(data.categoryScores.communication.score)}
           </Text>
-          <TrafficLight color={getTrafficLightColor(data.categoryScores.communication.score)} />
+          <TrafficLight color={getTrafficLightColor(data.categoryScores.communication.score)} size={16} />
         </View>
         
         <View style={styles.scoreRow}>
@@ -79,7 +79,7 @@ export const ResultsPage = ({ data }: ResultsPageProps) => (
           <Text style={[styles.scoreValue, { color: getColorForTrafficLight(getTrafficLightColor(data.categoryScores.evidenceGathering.score)) }]}>
             {formatScore(data.categoryScores.evidenceGathering.score)}
           </Text>
-          <TrafficLight color={getTrafficLightColor(data.categoryScores.evidenceGathering.score)} />
+          <TrafficLight color={getTrafficLightColor(data.categoryScores.evidenceGathering.score)} size={16} />
         </View>
       </View>
       

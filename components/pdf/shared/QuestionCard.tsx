@@ -66,7 +66,7 @@ export const QuestionCard = ({ question }: QuestionCardProps) => (
       <Text style={styles.questionNumber}>Q{question.number}</Text>
       <Text style={styles.questionText}>{question.questionText}</Text>
       <View style={styles.scoreIcon}>
-        <TrafficLight color={question.color} style={{ fontSize: 16 }} />
+        <TrafficLight color={question.color} size={14} />
       </View>
     </View>
     
