@@ -130,7 +130,7 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
   doc.text('Compliance by Category', startX, yPos);
   yPos += 10;
   
-  const complianceData = [
+  const complianceCategories = [
     {
       category: 'Documentation',
       score: data.categoryScores.documentation.score,
@@ -148,10 +148,13 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
     },
   ];
   
+  // Extract colors for didDrawCell scope
+  const complianceColors = complianceCategories.map(c => c.color);
+  
   autoTable(doc, {
     startY: yPos,
     head: [['Category', 'Score', 'Status']],
-    body: complianceData.map(item => [
+    body: complianceCategories.map(item => [
       item.category,
       formatScore(item.score),
       '', // Traffic light will be drawn in didDrawCell
@@ -173,14 +176,16 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
       1: { cellWidth: 35, halign: 'center' },
       2: { cellWidth: 35, halign: 'center' },
     },
-    didDrawCell: (data) => {
+    didDrawCell: (cellData) => {
       // Draw traffic lights in Status column
-      if (data.column.index === 2 && data.section === 'body') {
-        const rowIndex = data.row.index;
-        const cellX = data.cell.x + data.cell.width / 2;
-        const cellY = data.cell.y + data.cell.height / 2;
-        const color = complianceData[rowIndex].color;
-        drawTrafficLight(doc, cellX, cellY, color, 2);
+      if (cellData.column.index === 2 && cellData.section === 'body') {
+        const rowIndex = cellData.row.index;
+        if (rowIndex < complianceColors.length) {
+          const color = complianceColors[rowIndex];
+          const cellX = cellData.cell.x + cellData.cell.width / 2;
+          const cellY = cellData.cell.y + cellData.cell.height / 2;
+          drawTrafficLight(doc, cellX, cellY, color, 2);
+        }
       }
     },
     margin: { left: startX },

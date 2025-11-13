@@ -116,9 +116,16 @@ export async function complianceStatus(doc: jsPDF, data: ReportData): Promise<vo
     },
   ];
   
+  // Extract status as colors for didDrawCell
+  const statusColors = complianceItems.map(item => {
+    if (item.status === 'FAIL') return 'red';
+    if (item.status === 'PARTIAL') return 'orange';
+    return 'green';
+  });
+  
   const tableData = complianceItems.map(item => [
     item.requirement,
-    item.status,
+    '', // Empty for traffic light
     item.action,
   ]);
   
@@ -147,15 +154,12 @@ export async function complianceStatus(doc: jsPDF, data: ReportData): Promise<vo
       // Draw traffic lights in Status column
       if (cellData.column.index === 1 && cellData.section === 'body') {
         const rowIndex = cellData.row.index;
-        const status = complianceItems[rowIndex].status;
-        
-        let color: 'red' | 'orange' | 'green' = 'green';
-        if (status === 'FAIL') color = 'red';
-        else if (status === 'PARTIAL') color = 'orange';
-        
-        const cellX = cellData.cell.x + cellData.cell.width / 2;
-        const cellY = cellData.cell.y + cellData.cell.height / 2;
-        drawTrafficLight(doc, cellX, cellY, color, 2);
+        if (rowIndex < statusColors.length) {
+          const color = statusColors[rowIndex] as 'red' | 'orange' | 'green';
+          const cellX = cellData.cell.x + cellData.cell.width / 2;
+          const cellY = cellData.cell.y + cellData.cell.height / 2;
+          drawTrafficLight(doc, cellX, cellY, color, 2);
+        }
       }
     },
     margin: { left: startX },

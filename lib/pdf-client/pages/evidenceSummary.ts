@@ -27,17 +27,20 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
   yPos += 20;
   
   // Table data from subcategories
-  const evidenceData = data.subcategoryScores.map(subcat => [
+  const tableBody = data.subcategoryScores.map(subcat => [
     subcat.category,
     subcat.name,
-    subcat.color, // Will draw traffic light
+    '', // Empty for traffic light
     subcat.score >= 7 ? 'Comprehensive' : subcat.score >= 4 ? 'Partial' : 'Inadequate',
   ]);
+  
+  // Extract colors for didDrawCell
+  const rowColors = data.subcategoryScores.map(subcat => subcat.color);
   
   autoTable(doc, {
     startY: yPos,
     head: [['Category', 'Subcategory', 'Status', 'Notes']],
-    body: evidenceData.map(row => [row[0], row[1], '', row[3]]),
+    body: tableBody,
     theme: 'grid',
     headStyles: {
       fillColor: hexToRgb(COLORS.paleBlue),
@@ -60,10 +63,12 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
       // Draw traffic lights in Status column
       if (cellData.column.index === 2 && cellData.section === 'body') {
         const rowIndex = cellData.row.index;
-        const color = evidenceData[rowIndex][2] as 'red' | 'orange' | 'green';
-        const cellX = cellData.cell.x + cellData.cell.width / 2;
-        const cellY = cellData.cell.y + cellData.cell.height / 2;
-        drawTrafficLight(doc, cellX, cellY, color, 2);
+        if (rowIndex < rowColors.length) {
+          const color = rowColors[rowIndex] as 'red' | 'orange' | 'green';
+          const cellX = cellData.cell.x + cellData.cell.width / 2;
+          const cellY = cellData.cell.y + cellData.cell.height / 2;
+          drawTrafficLight(doc, cellX, cellY, color, 2);
+        }
       }
     },
     margin: { left: startX },

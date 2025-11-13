@@ -45,6 +45,9 @@ export async function results(doc: jsPDF, data: ReportData): Promise<void> {
     },
   ];
   
+  // Extract colors for didDrawCell scope
+  const categoryColors = categoryData.map(c => c.color);
+  
   const tableBody = categoryData.map(cat => [
     cat.category,
     formatScore(cat.score),
@@ -76,10 +79,12 @@ export async function results(doc: jsPDF, data: ReportData): Promise<void> {
       // Draw traffic lights in Rating column
       if (cellData.column.index === 2 && cellData.section === 'body') {
         const rowIndex = cellData.row.index;
-        const color = categoryData[rowIndex].color as 'red' | 'orange' | 'green';
-        const cellX = cellData.cell.x + cellData.cell.width / 2;
-        const cellY = cellData.cell.y + cellData.cell.height / 2;
-        drawTrafficLight(doc, cellX, cellY, color, 2.5);
+        if (rowIndex < categoryColors.length) {
+          const color = categoryColors[rowIndex] as 'red' | 'orange' | 'green';
+          const cellX = cellData.cell.x + cellData.cell.width / 2;
+          const cellY = cellData.cell.y + cellData.cell.height / 2;
+          drawTrafficLight(doc, cellX, cellY, color, 2.5);
+        }
       }
     },
     margin: { left: startX },
