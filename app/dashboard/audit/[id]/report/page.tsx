@@ -82,68 +82,74 @@ export default function ReportPreviewPage() {
         setPdfUrl(url);
         console.log('[PDF] ✅ Server-side generation worked!');
       } else {
-        // Server failed, fallback to CLIENT-SIDE
-        console.log('[PDF] Server failed, using client-side generation...');
+        // Server failed, fallback to CLIENT-SIDE with jsPDF
+        console.log('[PDF] Server failed, using client-side jsPDF...');
         
         // Validate we have data
         if (!auditInfo) {
           throw new Error('Audit info not loaded yet');
         }
         
-        console.log('[PDF] Using data:', {
-          property: auditInfo.propertyAddress,
-          client: auditInfo.clientName,
-          score: auditInfo.overallScore
-        });
+        // Import jsPDF
+        const { default: jsPDF } = await import('jspdf');
         
-        // Import PDF renderer
-        const { pdf, Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
+        console.log('[PDF] Creating PDF with jsPDF...');
         
-        console.log('[PDF] Dependencies loaded');
+        // Create PDF
+        const doc = new jsPDF();
         
-        // Define inline component to avoid dynamic import issues
-        const styles = StyleSheet.create({
-          page: { padding: 40 },
-          title: { fontSize: 24, marginBottom: 20, fontFamily: 'Helvetica-Bold' },
-          text: { fontSize: 12, marginBottom: 10 },
-        });
+        // Title
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Landlord Risk Audit Report', 20, 30);
         
-        // Sanitized values
-        const property = String(auditInfo.propertyAddress || 'Unknown Property');
-        const landlord = String(auditInfo.clientName || 'Unknown Landlord');
-        const score = Number(auditInfo.overallScore) || 0;
+        // Property Info
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Audit Information', 20, 50);
         
-        console.log('[PDF] Creating document with:', { property, landlord, score });
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Property Address: ${auditInfo.propertyAddress}`, 20, 65);
+        doc.text(`Client Name: ${auditInfo.clientName}`, 20, 75);
+        doc.text(`Overall Score: ${auditInfo.overallScore || 'N/A'}/10`, 20, 85);
+        doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, 20, 95);
         
-        // Create document directly with JSX-like structure
-        const doc = React.createElement(
-          Document,
-          null,
-          React.createElement(
-            Page,
-            { size: 'A4', style: styles.page },
-            React.createElement(Text, { style: styles.title }, 'Landlord Risk Audit Report'),
-            React.createElement(Text, { style: styles.text }, `Property: ${property}`),
-            React.createElement(Text, { style: styles.text }, `Landlord: ${landlord}`),
-            React.createElement(Text, { style: styles.text }, `Overall Score: ${score}/10`),
-            React.createElement(Text, { style: styles.text }, 'This is a minimal test PDF to verify Vercel compatibility.')
-          )
-        );
+        // Summary Section
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Summary', 20, 115);
         
-        console.log('[PDF] Document created, generating blob...');
-        const blob = await pdf(doc).toBlob();
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        const summaryText = 'This is a minimal PDF report generated client-side using jsPDF. ' +
+                           'Full report generation with all details is currently in development.';
+        const splitText = doc.splitTextToSize(summaryText, 170);
+        doc.text(splitText, 20, 130);
         
-        console.log('[PDF] Blob generated, downloading...');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `audit-report-${auditId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Note
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('Note: This is a simplified report. Full report features coming soon.', 20, 160)
         
-        console.log('[PDF] ✅ Client-side generation worked!');
+        // Footer
+        const pageCount = doc.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(10);
+          doc.setTextColor(128, 128, 128);
+          doc.text(
+            `Page ${i} of ${pageCount}`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'center' }
+          );
+        }
+        
+        console.log('[PDF] Saving PDF...');
+        doc.save(`landlord-audit-report-${auditId}.pdf`);
+        
+        console.log('[PDF] ✅ Client-side jsPDF generation worked!');
       }
     } catch (error) {
       console.error("Download error:", error);
