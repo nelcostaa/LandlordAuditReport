@@ -142,7 +142,7 @@ export default function ReportPreviewPage() {
         console.log('[PDF] Generating blob with @react-pdf...');
         
         // Generate blob
-        const blob = await pdf(element).toBlob();
+        const blob = await pdf(element as any).toBlob();
         
         console.log('[PDF] Blob generated, downloading...');
         
