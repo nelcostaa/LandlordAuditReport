@@ -4,12 +4,10 @@ import { auth } from '@/lib/auth';
 import { sql } from '@vercel/postgres';
 import React from 'react';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { ReportDocument, generateReportFilename } from '@/components/pdf/ReportDocument';
-import MinimalTestDocument from '@/components/pdf/MinimalTestDocument';
-import { transformAuditToReportData } from '@/lib/pdf/formatters';
-import { generatePillarsChart, generateSubcategoryChart } from '@/lib/pdf/chartGenerators';
-import { getCachedPDF, setCachedPDF } from '@/lib/pdf/cache';
+import { transformAuditToReportData, formatReportDate, sanitizeAddressForFilename } from '@/lib/pdf/formatters';
 import { calculateAuditScores } from '@/lib/scoring';
+import { generatePDFFromHTML } from '@/lib/pdf/puppeteer-generator';
+import { generateMinimalReportHTML } from '@/components/pdf-html/MinimalReportHTML';
 
 /**
  * GET /api/reports/[auditId]
@@ -132,15 +130,21 @@ export async function GET(
     // 8. Generate charts in parallel
     // Charts removed from PDF (not rendering properly)
     
-      // 9. Render PDF - TESTING WITH MINIMAL DOCUMENT
-      console.log('[PDF] Step 9: Rendering MINIMAL test PDF document...');
-      const pdfBuffer = await renderToBuffer(
-        React.createElement(MinimalTestDocument, { 
-          propertyAddress: reportData.propertyAddress,
-          landlordName: reportData.landlordName,
-          overallScore: reportData.overallScore
-        }) as any
-      );
+      // 9. Generate PDF using Puppeteer (Vercel compatible)
+      console.log('[PDF] Step 9: Generating HTML template...');
+      const reportId = `LRA-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-XXXXXX`;
+      const html = generateMinimalReportHTML({
+        propertyAddress: reportData.propertyAddress,
+        landlordName: reportData.landlordName,
+        auditorName: reportData.auditorName,
+        overallScore: reportData.overallScore,
+        riskTier: reportData.riskTier,
+        reportId,
+        reportDate: formatReportDate(reportData.auditEndDate),
+      });
+      
+      console.log('[PDF] Step 10: Rendering PDF with Puppeteer...');
+      const pdfBuffer = await generatePDFFromHTML(html);
       
       const pdfSize = Math.round(pdfBuffer.length / 1024);
       console.log(`[PDF] ✓ PDF rendered successfully (${pdfSize} KB)`);
@@ -149,7 +153,9 @@ export async function GET(
     console.log(`[PDF] Cache storage disabled for debugging`);
     
     // 11. Generate filename
-    const filename = generateReportFilename(reportData);
+    const sanitizedAddress = sanitizeAddressForFilename(reportData.propertyAddress);
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `landlord-audit-report-${sanitizedAddress}-${date}.pdf`;
     
     // 12. Return PDF
     const totalTime = Date.now() - startTime;
