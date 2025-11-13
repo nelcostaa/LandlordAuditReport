@@ -127,7 +127,11 @@ export async function methodology(doc: jsPDF, data: ReportData): Promise<void> {
       0: { cellWidth: 100 },
       1: { cellWidth: 70, halign: 'center' },
     },
-    margin: { left: startX },
+    margin: { 
+      left: startX,
+      top: margins.top + 20,
+      bottom: margins.bottom + 10,
+    },
   });
   
   addPageFooter(doc);

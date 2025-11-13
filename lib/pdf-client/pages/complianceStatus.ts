@@ -162,7 +162,11 @@ export async function complianceStatus(doc: jsPDF, data: ReportData): Promise<vo
         }
       }
     },
-    margin: { left: startX },
+    margin: { 
+      left: startX,
+      top: margins.top + 20,
+      bottom: margins.bottom + 10,
+    },
   });
   
   addPageFooter(doc);

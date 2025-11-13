@@ -64,7 +64,11 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
         1: { cellWidth: 80 },
         2: { cellWidth: 30, halign: 'center' },
       },
-      margin: { left: startX },
+      margin: { 
+        left: startX,
+        top: margins.top + 20,
+        bottom: margins.bottom + 10,
+      },
     });
   } else {
     doc.setFontSize(11);

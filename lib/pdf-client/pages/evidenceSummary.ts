@@ -71,7 +71,11 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
         }
       }
     },
-    margin: { left: startX },
+    margin: { 
+      left: startX,
+      top: margins.top + 20, // Space for header on new pages
+      bottom: margins.bottom + 10, // Space for footer
+    },
   });
   
   addPageFooter(doc);

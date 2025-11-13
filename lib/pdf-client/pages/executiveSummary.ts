@@ -57,7 +57,11 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
       0: { fontStyle: 'bold', textColor: hexToRgb(COLORS.mediumGray), cellWidth: 60 },
       1: { fontStyle: 'bold', textColor: hexToRgb(COLORS.black) },
     },
-    margin: { left: startX },
+    margin: { 
+      left: startX,
+      top: margins.top + 20,
+      bottom: margins.bottom + 10,
+    },
   });
   
   yPos = (doc as any).lastAutoTable.finalY + 15;
@@ -188,7 +192,11 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
         }
       }
     },
-    margin: { left: startX },
+    margin: { 
+      left: startX,
+      top: margins.top + 20,
+      bottom: margins.bottom + 10,
+    },
   });
   
   yPos = (doc as any).lastAutoTable.finalY + 20;
