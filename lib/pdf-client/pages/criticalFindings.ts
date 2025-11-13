@@ -51,31 +51,39 @@ export async function criticalFindings(doc: jsPDF, data: ReportData): Promise<vo
   const criticalQuestions = data.questionResponses.red;
   
   if (criticalQuestions.length > 0) {
-    // Alert Box (red border, light red background)
-    const alertHeight = 30;
+    // Alert Box (red border, light red background) - Dynamic height
+    const alertY = yPos;
+    
+    // Calculate alert text height first
+    doc.setFontSize(10);
+    const alertText = 'The following findings expose you to immediate legal action, prosecution, and substantial financial penalties. These items require urgent remediation within 7 days. Professional legal consultation is strongly recommended for items involving statutory violations.';
+    const wrappedAlert = doc.splitTextToSize(alertText, contentWidth - 16);
+    const alertTextHeight = wrappedAlert.length * 4;
+    const alertHeight = 20 + alertTextHeight;
+    
+    // Draw alert box
     setFillColorHex(doc, '#fff5f5');
     setDrawColorHex(doc, COLORS.red);
     doc.setLineWidth(0.5);
-    doc.roundedRect(startX, yPos, contentWidth, alertHeight, 2, 2, 'FD');
+    doc.roundedRect(startX, alertY, contentWidth, alertHeight, 2, 2, 'FD');
     
-    // Alert text
+    // Alert title (remove Unicode warning symbol)
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     setTextColorHex(doc, COLORS.red);
     doc.text(
-      `⚠ URGENT: ${criticalQuestions.length} Critical Non-Compliance Issue${criticalQuestions.length > 1 ? 's' : ''} Identified`,
+      `URGENT: ${criticalQuestions.length} Critical Non-Compliance Issue${criticalQuestions.length > 1 ? 's' : ''} Identified`,
       startX + 8,
-      yPos + 10
+      alertY + 10
     );
     
+    // Alert description
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     setTextColorHex(doc, COLORS.black);
-    const alertText = 'The following findings expose you to immediate legal action, prosecution, and substantial financial penalties. These items require urgent remediation within 7 days. Professional legal consultation is strongly recommended for items involving statutory violations.';
-    const wrappedAlert = doc.splitTextToSize(alertText, contentWidth - 16);
-    doc.text(wrappedAlert, startX + 8, yPos + 17);
+    doc.text(wrappedAlert, startX + 8, alertY + 17);
     
-    yPos += alertHeight + 15;
+    yPos = alertY + alertHeight + 15;
     
     // Section title
     doc.setFontSize(FONTS.h2.size);
@@ -111,12 +119,15 @@ export async function criticalFindings(doc: jsPDF, data: ReportData): Promise<vo
       setTextColorHex(doc, COLORS.red);
       doc.text(`Q${question.number}`, startX + 8, cardYPos);
       
+      // Category text with wrapping to prevent overflow
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
       setTextColorHex(doc, COLORS.mediumGray);
-      doc.text(`${question.category} / ${question.subcategory}`, pageWidth - margins.right - 60, cardYPos, { align: 'right' });
+      const categoryText = `${question.category} / ${question.subcategory}`;
+      const categoryWrapped = doc.splitTextToSize(categoryText, contentWidth - 40);
+      doc.text(categoryWrapped, startX + 45, cardYPos);
       
-      cardYPos += 8;
+      cardYPos += Math.max(8, categoryWrapped.length * 3.5);
       
       // Separator
       setDrawColorHex(doc, '#e5e7eb');
