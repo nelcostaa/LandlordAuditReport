@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { LogoutButton } from "@/components/LogoutButton";
 
 export default async function DashboardLayout({
   children,
@@ -37,14 +38,7 @@ export default async function DashboardLayout({
               <span className="text-sm text-gray-600">
                 {session.user.name}
               </span>
-              <form action="/api/auth/signout" method="POST">
-                <button
-                  type="submit"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Logout
-                </button>
-              </form>
+              <LogoutButton />
             </div>
           </div>
         </div>
