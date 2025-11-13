@@ -89,6 +89,7 @@ export async function GET(
     return NextResponse.json({
       audit,
       responses,
+      questions: questionsForScoring, // Include questions for PDF generation
       scores,
       notes: notesResult.rows,
     });
