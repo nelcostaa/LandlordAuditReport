@@ -9,12 +9,26 @@ import chromium from '@sparticuz/chromium';
 export async function generatePDFFromHTML(html: string): Promise<Buffer> {
   const startTime = Date.now();
   console.log('[Puppeteer] Launching browser...');
+  console.log('[Puppeteer] Environment check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    VERCEL: process.env.VERCEL,
+    CHROMIUM_REMOTE_EXEC_PATH: process.env.CHROMIUM_REMOTE_EXEC_PATH ? 'SET' : 'NOT SET',
+    CHROMIUM_REMOTE_EXEC_PATH_VALUE: process.env.CHROMIUM_REMOTE_EXEC_PATH || 'undefined',
+  });
   
   let browser;
   
   try {
+    // CRITICAL: Explicitly set environment variable if not present
+    // This ensures Chromium downloads from GitHub instead of looking locally
+    if (!process.env.CHROMIUM_REMOTE_EXEC_PATH) {
+      console.warn('[Puppeteer] CHROMIUM_REMOTE_EXEC_PATH not set, setting default...');
+      process.env.CHROMIUM_REMOTE_EXEC_PATH = 'https://github.com/Sparticuz/chromium/releases/download/v141.0.0/chromium-v141.0.0-pack.tar.br';
+    }
+    
     // Get Chromium executable path
     // Uses CHROMIUM_REMOTE_EXEC_PATH env var in Vercel to download binary
+    console.log('[Puppeteer] Calling chromium.executablePath()...');
     const executablePath = await chromium.executablePath();
     
     console.log('[Puppeteer] Chromium path:', executablePath);
