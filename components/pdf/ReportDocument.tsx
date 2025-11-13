@@ -18,7 +18,7 @@ interface ReportDocumentProps {
   data: ReportData;
 }
 
-export const ReportDocument = ({ 
+const ReportDocument = ({ 
   data
 }: ReportDocumentProps) => {
   // Validate required data exists
@@ -128,6 +128,9 @@ export const ReportDocument = ({
   );
 };
 
+// Export as default for better Vercel compatibility
+export default ReportDocument;
+
 /**
  * Generate filename for PDF report
  */
@@ -136,4 +139,7 @@ export function generateReportFilename(data: ReportData): string {
   const date = data.auditEndDate.toISOString().split('T')[0];
   return `landlord-audit-report-${sanitizedAddress}-${date}.pdf`;
 }
+
+// Also export as named export for backwards compatibility
+export { ReportDocument };
 
