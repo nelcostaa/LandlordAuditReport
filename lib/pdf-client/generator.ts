@@ -105,13 +105,15 @@ export async function generateCompletePDF(data: ReportData): Promise<jsPDF> {
 function updatePageNumbers(doc: jsPDF, totalPages: number): void {
   const pageCount = doc.getNumberOfPages();
   
-  // Skip page 1 (cover page has no header)
+  // Import updatePageNumber function
+  const { updatePageNumber } = require('./components/header');
+  
+  // Skip page 1 (cover page has no header/page number)
   for (let i = 2; i <= pageCount; i++) {
     doc.setPage(i);
-    // Headers are already added by individual pages, we just need to ensure
-    // the page count is correct. Since headers were added with totalPages=999,
-    // we don't need to re-render them - jsPDF doesn't support easy text replacement.
-    // This is a limitation we'll accept for now.
+    updatePageNumber(doc, i, totalPages);
   }
+  
+  console.log(`[PDF Generator] Updated page numbers: 1-${totalPages}`);
 }
 

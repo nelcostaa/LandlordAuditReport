@@ -88,11 +88,14 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
   doc.setFontSize(36);
   doc.setFont('helvetica', 'bold');
   setTextColorHex(doc, COLORS.black);
-  doc.text(formatScore(data.overallScore), startX + 10, scoreY);
+  const scoreText = formatScore(data.overallScore);
+  doc.text(scoreText, startX + 10, scoreY);
   
-  // Traffic light next to score
+  // Traffic light next to score (calculate position based on score text width)
+  const scoreWidth = doc.getTextWidth(scoreText);
   const trafficLightColor = getTrafficLightColor(data.overallScore);
-  drawTrafficLight(doc, startX + 35, scoreY - 4, trafficLightColor, 3);
+  // Position traffic light 12mm to the right of score text end (more spacing)
+  drawTrafficLight(doc, startX + 10 + scoreWidth + 12, scoreY - 4, trafficLightColor, 3);
   
   // Risk Classification and Compliance Status
   const detailsY = scoreY + 10;
