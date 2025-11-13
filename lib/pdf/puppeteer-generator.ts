@@ -16,9 +16,9 @@ export async function generatePDFFromHTML(html: string): Promise<Buffer> {
     // Launch browser with Chromium optimized for serverless
     browser = await puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
+      defaultViewport: { width: 1920, height: 1080 },
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      headless: true,
     });
     
     console.log(`[Puppeteer] Browser launched in ${Date.now() - startTime}ms`);
