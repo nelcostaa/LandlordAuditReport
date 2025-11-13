@@ -98,7 +98,24 @@ export default function ReportPreviewPage() {
           audit: auditData.audit?.id,
           responses: auditData.responses?.length,
           questions: auditData.questions?.length,
+          scores: auditData.scores ? 'present' : 'missing',
         });
+        
+        // Validate required data exists
+        if (!auditData.audit) {
+          throw new Error('Audit data missing');
+        }
+        if (!auditData.responses || auditData.responses.length === 0) {
+          throw new Error('No responses found');
+        }
+        if (!auditData.questions || auditData.questions.length === 0) {
+          throw new Error('No questions found');
+        }
+        if (!auditData.scores) {
+          throw new Error('Scores data missing');
+        }
+        
+        console.log('[PDF] Data validation passed');
         
         // Import complete generator and data transformer
         const { generateCompletePDF } = await import('@/lib/pdf-client/generator');
