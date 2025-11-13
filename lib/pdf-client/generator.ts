@@ -11,6 +11,7 @@ import { complianceStatus } from './pages/complianceStatus';
 import { evidenceSummary } from './pages/evidenceSummary';
 import { introduction } from './pages/introduction';
 import { results } from './pages/results';
+import { subcategoryScores } from './pages/subcategoryScores';
 import { recommendations } from './pages/recommendations';
 import { actionPlan } from './pages/actionPlan';
 import { detailedResults } from './pages/detailedResults';
@@ -70,6 +71,10 @@ export async function generateCompletePDF(data: ReportData): Promise<jsPDF> {
     // Results
     console.log('[PDF Generator] Generating results...');
     await results(doc, data);
+    
+    // Subcategory Scores (Bar Charts)
+    console.log('[PDF Generator] Generating subcategory scores...');
+    await subcategoryScores(doc, data);
     
     // Recommendations
     console.log('[PDF Generator] Generating recommendations...');

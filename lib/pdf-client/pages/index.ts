@@ -8,6 +8,7 @@ export { complianceStatus } from './complianceStatus';
 export { evidenceSummary } from './evidenceSummary';
 export { introduction } from './introduction';
 export { results } from './results';
+export { subcategoryScores } from './subcategoryScores';
 export { recommendations } from './recommendations';
 export { actionPlan } from './actionPlan';
 export { detailedResults } from './detailedResults';
