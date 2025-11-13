@@ -96,7 +96,7 @@ export default function ReportPreviewPage() {
           overallScore: auditInfo?.overallScore || 0,
         });
         
-        const blob = await pdf(doc).toBlob();
+        const blob = await pdf(doc as any).toBlob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
