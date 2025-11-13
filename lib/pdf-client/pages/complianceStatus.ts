@@ -164,8 +164,8 @@ export async function complianceStatus(doc: jsPDF, data: ReportData): Promise<vo
     },
     margin: { 
       left: startX,
-      top: margins.top + 20,
-      bottom: margins.bottom + 10,
+      top: margins.top + 10,
+      bottom: margins.bottom + 5,
     },
   });
   

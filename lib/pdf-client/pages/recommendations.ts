@@ -66,8 +66,8 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
       },
       margin: { 
         left: startX,
-        top: margins.top + 20,
-        bottom: margins.bottom + 10,
+        top: margins.top + 10,
+        bottom: margins.bottom + 5,
       },
     });
   } else {
