@@ -5,6 +5,7 @@ import { sql } from '@vercel/postgres';
 import React from 'react';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { ReportDocument, generateReportFilename } from '@/components/pdf/ReportDocument';
+import MinimalTestDocument from '@/components/pdf/MinimalTestDocument';
 import { transformAuditToReportData } from '@/lib/pdf/formatters';
 import { generatePillarsChart, generateSubcategoryChart } from '@/lib/pdf/chartGenerators';
 import { getCachedPDF, setCachedPDF } from '@/lib/pdf/cache';
@@ -131,10 +132,14 @@ export async function GET(
     // 8. Generate charts in parallel
     // Charts removed from PDF (not rendering properly)
     
-      // 9. Render PDF
-      console.log('[PDF] Step 9: Rendering PDF document with React-PDF...');
+      // 9. Render PDF - TESTING WITH MINIMAL DOCUMENT
+      console.log('[PDF] Step 9: Rendering MINIMAL test PDF document...');
       const pdfBuffer = await renderToBuffer(
-        React.createElement(ReportDocument, { data: reportData }) as any
+        React.createElement(MinimalTestDocument, { 
+          propertyAddress: reportData.propertyAddress,
+          landlordName: reportData.landlordName,
+          overallScore: reportData.overallScore
+        }) as any
       );
       
       const pdfSize = Math.round(pdfBuffer.length / 1024);
