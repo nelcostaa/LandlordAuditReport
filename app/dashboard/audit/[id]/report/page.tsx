@@ -85,18 +85,37 @@ export default function ReportPreviewPage() {
         // Server failed, fallback to CLIENT-SIDE
         console.log('[PDF] Server failed, using client-side generation...');
         
+        // Validate we have data
+        if (!auditInfo) {
+          throw new Error('Audit info not loaded yet');
+        }
+        
+        console.log('[PDF] Using data:', {
+          property: auditInfo.propertyAddress,
+          client: auditInfo.clientName,
+          score: auditInfo.overallScore
+        });
+        
         // Import client-side generator dynamically
         const { pdf } = await import('@react-pdf/renderer');
         const MinimalTestDocument = (await import('@/components/pdf/MinimalTestDocument')).default;
         
-        // Generate in browser
-        const doc = React.createElement(MinimalTestDocument, {
-          propertyAddress: auditInfo?.propertyAddress || 'Property',
-          landlordName: auditInfo?.clientName || 'Landlord',
-          overallScore: auditInfo?.overallScore || 0,
-        });
+        // Ensure all values are valid primitives
+        const pdfData = {
+          propertyAddress: String(auditInfo.propertyAddress || 'Unknown Property'),
+          landlordName: String(auditInfo.clientName || 'Unknown Landlord'),
+          overallScore: Number(auditInfo.overallScore) || 0,
+        };
         
+        console.log('[PDF] Sanitized data:', pdfData);
+        
+        // Generate in browser
+        const doc = React.createElement(MinimalTestDocument, pdfData);
+        
+        console.log('[PDF] Document created, generating blob...');
         const blob = await pdf(doc as any).toBlob();
+        
+        console.log('[PDF] Blob generated, downloading...');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
