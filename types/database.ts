@@ -38,7 +38,7 @@ export interface FormResponse {
 export interface Score {
   id: number;
   audit_id: number;
-  category: string;
+  scores_category: string;
   score: number;
   created_at: Date;
 }

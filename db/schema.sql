@@ -41,10 +41,10 @@ CREATE TABLE IF NOT EXISTS form_responses (
 CREATE TABLE IF NOT EXISTS scores (
   id SERIAL PRIMARY KEY,
   audit_id INTEGER NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
-  category VARCHAR(100) NOT NULL,
+  scores_category VARCHAR(100) NOT NULL,
   score DECIMAL(4, 2) NOT NULL CHECK (score >= 1.0 AND score <= 10.0),
   created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE (audit_id, category)
+  UNIQUE (audit_id, scores_category)
 );
 
 -- Notes table (auditor comments)
@@ -60,5 +60,5 @@ CREATE TABLE IF NOT EXISTS notes (
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_audits_created_at ON audits(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_form_responses_question_id ON form_responses(question_id);
-CREATE INDEX IF NOT EXISTS idx_scores_category ON scores(category);
+CREATE INDEX IF NOT EXISTS idx_scores_category ON scores(scores_category);
 

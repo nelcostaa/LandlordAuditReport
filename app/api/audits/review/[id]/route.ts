@@ -63,18 +63,18 @@ export async function GET(
       // Save scores to database
       for (const categoryScore of scores.categoryScores) {
         await sql`
-          INSERT INTO scores (audit_id, category, score, created_at)
+          INSERT INTO scores (audit_id, scores_category, score, created_at)
           VALUES (${auditId}, ${categoryScore.category}, ${categoryScore.score}, NOW())
-          ON CONFLICT (audit_id, category)
+          ON CONFLICT (audit_id, scores_category)
           DO UPDATE SET score = ${categoryScore.score}
         `;
       }
 
       // Also save overall score
       await sql`
-        INSERT INTO scores (audit_id, category, score, created_at)
+        INSERT INTO scores (audit_id, scores_category, score, created_at)
         VALUES (${auditId}, 'Overall', ${scores.overallScore.score}, NOW())
-        ON CONFLICT (audit_id, category)
+        ON CONFLICT (audit_id, scores_category)
         DO UPDATE SET score = ${scores.overallScore.score}
       `;
     }
