@@ -35,26 +35,18 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
   doc.text(wrapped, startX, yPos);
   yPos += wrapped.length * 4 + 20;
   
-  // Categorize actions by priority/timeline
+  // Categorize actions by priority/timeline (only 2 sections per James feedback)
   const immediateActions: string[] = [];
   const shortTermActions: string[] = [];
-  const mediumTermActions: string[] = [];
   
   // Critical findings (score 1-3) = Immediate (0-7 days)
   data.questionResponses.red.forEach(q => {
     immediateActions.push(`${q.subcategory}: ${q.questionText.substring(0, 100)}${q.questionText.length > 100 ? '...' : ''}`);
   });
   
-  // Orange findings (score 4-6) = Short-term (30 days)
+  // Orange findings (score 4-6) = Short-term (1-4 weeks)
   data.questionResponses.orange.forEach(q => {
     shortTermActions.push(`${q.subcategory}: ${q.questionText.substring(0, 100)}${q.questionText.length > 100 ? '...' : ''}`);
-  });
-  
-  // Recommendations = Medium-term (90 days)
-  Object.values(data.recommendationsByCategory).flat().forEach(rec => {
-    if (rec.score < 7) {
-      mediumTermActions.push(`${rec.subcategory}: Implement recommended improvements (Score: ${formatScore(rec.score)})`);
-    }
   });
   
   // IMMEDIATE ACTIONS
@@ -155,48 +147,9 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
     yPos += 15;
   }
   
-  // MEDIUM-TERM ACTIONS
-  if (mediumTermActions.length > 0) {
-    yPos = addNewPageIfNeeded(doc, yPos, 30);
-    
-    const headerY = yPos;
-    setFillColorHex(doc, COLORS.paleBlue);
-    doc.rect(startX, headerY, contentWidth, 12, 'F');
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    setTextColorHex(doc, '#cc9900');
-    doc.text('MEDIUM-TERM ACTIONS (1-3 Months)', startX + 8, headerY + 8);
-    yPos += 12;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'italic');
-    setTextColorHex(doc, COLORS.mediumGray);
-    doc.text('Improvements for best practice compliance.', startX + 8, yPos + 5);
-    yPos += 10;
-    
-    mediumTermActions.forEach((action, idx) => {
-      const actionHeight = 15;
-      yPos = addNewPageIfNeeded(doc, yPos, actionHeight);
-      
-      setDrawColorHex(doc, COLORS.lightGray);
-      doc.setLineWidth(0.1);
-      doc.line(startX, yPos, startX + contentWidth, yPos);
-      
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      setTextColorHex(doc, '#cc9900');
-      doc.text('MEDIUM', startX + 8, yPos + 8);
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      setTextColorHex(doc, COLORS.black);
-      const actionWrapped = doc.splitTextToSize(action, contentWidth - 80);
-      doc.text(actionWrapped, startX + 80, yPos + 8);
-      
-      yPos += Math.max(actionHeight, actionWrapped.length * 4 + 6);
-    });
-  }
+  // REMOVED PER JAMES FEEDBACK: MEDIUM-TERM ACTIONS section
+  // James said: "don't split them" - keep only 2 sections (Critical + Short-term)
+  // Previously had a 3rd section that was splitting orange scores
   
   addPageFooter(doc);
 }
