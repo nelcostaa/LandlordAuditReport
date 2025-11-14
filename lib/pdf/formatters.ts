@@ -30,10 +30,7 @@ export interface QuestionResponseData {
   score: number;
   color: 'red' | 'orange' | 'green';
   comment?: string;
-  // Report action data from CSV import
-  red_score_example?: string | null;
-  orange_score_example?: string | null;
-  report_action?: string | null;
+  // CSV fallback columns removed - now using score_examples array
   // Scoring guidance from Edit Questions
   score_examples?: Array<{
     score_level: 'low' | 'medium' | 'high';
@@ -347,9 +344,6 @@ function sortQuestionResponses(
       answer: fallbackAnswer,
       score: response.answer_value,
       color,
-      red_score_example: question.red_score_example,
-      orange_score_example: question.orange_score_example,
-      report_action: question.report_action,
       score_examples: question.score_examples,
     };
       
@@ -367,9 +361,6 @@ function sortQuestionResponses(
       answer: option.label || 'No answer text',
       score: response.answer_value,
       color,
-      red_score_example: question.red_score_example,
-      orange_score_example: question.orange_score_example,
-      report_action: question.report_action,
       score_examples: question.score_examples,
     };
     

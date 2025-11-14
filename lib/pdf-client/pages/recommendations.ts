@@ -183,14 +183,7 @@ function getReasonForLowScore(question: QuestionResponseData): string {
     }
   }
   
-  // Fallback 1: Use CSV data (red_score_example, orange_score_example)
-  if (question.color === 'red' && question.red_score_example) {
-    return question.red_score_example.trim();
-  } else if (question.color === 'orange' && question.orange_score_example) {
-    return question.orange_score_example.trim();
-  }
-  
-  // Fallback 2: Generic reason based on score/color
+  // Fallback: Generic reason based on score/color
   if (question.color === 'red') {
     return `Statutory requirement issue identified in ${question.subcategory || question.category}.`;
   } else if (question.color === 'orange') {
@@ -201,8 +194,8 @@ function getReasonForLowScore(question: QuestionResponseData): string {
 }
 
 /**
- * Get recommended action from question's score_examples or report_action
- * Multiple fallbacks: score_examples > CSV report_action > suggestedServices > generic
+ * Get recommended action from question's score_examples
+ * Fallbacks: score_examples > suggestedServices > generic
  */
 function getRecommendedAction(question: QuestionResponseData, data?: ReportData): string {
   // Priority 1: Use report_action from score_examples (Scoring Guidance from Edit Questions)
@@ -226,12 +219,7 @@ function getRecommendedAction(question: QuestionResponseData, data?: ReportData)
     }
   }
   
-  // Fallback 1: Use direct report_action from CSV
-  if (question.report_action) {
-    return question.report_action.trim();
-  }
-  
-  // Fallback 2: Check suggested services (if data available)
+  // Fallback: Check suggested services (if data available)
   if (data && data.suggestedServices) {
     const service = data.suggestedServices.find(
       s => s.lowScoringArea.toLowerCase().includes((question.subcategory || question.category).toLowerCase())

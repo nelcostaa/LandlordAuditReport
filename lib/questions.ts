@@ -14,10 +14,7 @@ export interface Question {
     label: string;
   }[];
   motivation_learning_point?: string;
-  // Report action data from CSV import
-  red_score_example?: string | null;
-  orange_score_example?: string | null;
-  report_action?: string | null;
+  // CSV fallback columns removed - now using score_examples array
   // Scoring guidance from Edit Questions
   score_examples?: Array<{
     score_level: 'low' | 'medium' | 'high';

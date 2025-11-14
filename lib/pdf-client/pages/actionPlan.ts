@@ -36,7 +36,7 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
   yPos += wrapped.length * 4 + 20;
   
   // Categorize actions by priority/timeline (only 2 sections per James feedback)
-  // Now storing full question objects to access CSV data (red_score_example, report_action)
+  // Now using score_examples from question_score_examples table
   const immediateActions = data.questionResponses.red;
   const shortTermActions = data.questionResponses.orange;
   
@@ -66,11 +66,12 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
     doc.text('Statutory requirement compliance issues exposing you to immediate fines or prosecution.', startX + 8, yPos + 5);
     yPos += 10;
     
-    // Action items (using CSV data per James feedback)
+    // Action items (using score_examples from question_score_examples table)
     immediateActions.forEach((q, idx) => {
-      // Use red_score_example for left column, report_action for right column
-      const leftColumnText = q.red_score_example || 'Statutory requirement issue identified';
-      const rightColumnText = q.report_action || `${q.subcategory}: ${q.questionText}`;
+      // Use reason_text from score_examples for left column, report_action for right column
+      const lowExample = q.score_examples?.find(ex => ex.score_level === 'low');
+      const leftColumnText = lowExample?.reason_text || 'Statutory requirement issue identified';
+      const rightColumnText = lowExample?.report_action || `${q.subcategory}: ${q.questionText}`;
       
       const leftWrapped = doc.splitTextToSize(leftColumnText, 65);
       const rightWrapped = doc.splitTextToSize(rightColumnText, contentWidth - 80);
@@ -82,13 +83,13 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
       doc.setLineWidth(0.1);
       doc.line(startX, yPos, startX + contentWidth, yPos);
       
-      // Left column: red_score_example (from Column U in spreadsheet)
+      // Left column: reason_text from score_examples (low score)
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       setTextColorHex(doc, COLORS.red);
       doc.text(leftWrapped, startX + 8, yPos + 6);
       
-      // Right column: report_action (from Column X in spreadsheet)
+      // Right column: report_action from score_examples (low score)
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       setTextColorHex(doc, COLORS.black);
@@ -119,11 +120,12 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
     doc.text('Areas needing improvement to meet compliance standards.', startX + 8, yPos + 5);
     yPos += 10;
     
-    // Action items (using CSV data per James feedback)
+    // Action items (using score_examples from question_score_examples table)
     shortTermActions.forEach((q, idx) => {
-      // Use orange_score_example for left column, report_action for right column
-      const leftColumnText = q.orange_score_example || 'Improvement needed';
-      const rightColumnText = q.report_action || `${q.subcategory}: ${q.questionText}`;
+      // Use reason_text from score_examples for left column, report_action for right column
+      const mediumExample = q.score_examples?.find(ex => ex.score_level === 'medium');
+      const leftColumnText = mediumExample?.reason_text || 'Improvement needed';
+      const rightColumnText = mediumExample?.report_action || `${q.subcategory}: ${q.questionText}`;
       
       const leftWrapped = doc.splitTextToSize(leftColumnText, 65);
       const rightWrapped = doc.splitTextToSize(rightColumnText, contentWidth - 80);
@@ -135,13 +137,13 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
       doc.setLineWidth(0.1);
       doc.line(startX, yPos, startX + contentWidth, yPos);
       
-      // Left column: orange_score_example (from Column V/W in spreadsheet)
+      // Left column: reason_text from score_examples (medium score)
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       setTextColorHex(doc, '#dc2626'); // Red for HIGH priority consistency
       doc.text(leftWrapped, startX + 8, yPos + 6);
       
-      // Right column: report_action (from Column X in spreadsheet)
+      // Right column: report_action from score_examples (medium score)
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       setTextColorHex(doc, COLORS.black);

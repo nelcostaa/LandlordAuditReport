@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS question_templates (
   weight DECIMAL(3, 1) NOT NULL CHECK (weight >= 0.5 AND weight <= 2.0),
   is_critical BOOLEAN DEFAULT FALSE,
   motivation_learning_point TEXT,
+  -- CSV fallback columns removed: red_score_example, orange_score_example, report_action
+  -- Now using question_score_examples table with reason_text and report_action per score level
   created_by_auditor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),

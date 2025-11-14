@@ -32,9 +32,6 @@ export async function GET(
         qt.weight,
         qt.is_critical,
         qt.motivation_learning_point,
-        qt.red_score_example,
-        qt.orange_score_example,
-        qt.report_action,
         json_agg(
           DISTINCT jsonb_build_object(
             'value', qao.score_value,
@@ -76,9 +73,6 @@ export async function GET(
       weight: parseFloat(row.weight),
       options: row.options || [],
       motivation_learning_point: row.motivation_learning_point,
-      red_score_example: row.red_score_example,
-      orange_score_example: row.orange_score_example,
-      report_action: row.report_action,
       score_examples: row.score_examples || [],
     }));
 
