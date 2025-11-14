@@ -8,13 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Audit, FormResponse, Note } from "@/types/database";
-import { questions } from "@/lib/questions";
+import { Question } from "@/lib/questions";
 import { CategoryScore, OverallScore, RecommendedAction } from "@/lib/scoring";
-import { FileText } from "lucide-react";
+import { FileText, Info } from "lucide-react";
 
 interface ReviewData {
   audit: Audit;
   responses: FormResponse[];
+  questions?: Question[];
   scores: {
     categoryScores: CategoryScore[];
     overallScore: OverallScore;
@@ -76,7 +77,7 @@ export default function AuditReviewPage() {
     );
   }
 
-  const { audit, responses, scores } = data;
+  const { audit, responses, questions, scores } = data;
 
   const getRiskBadge = (riskLevel: string) => {
     const colors = {
@@ -95,6 +96,41 @@ export default function AuditReviewPage() {
       low: "bg-blue-500 text-white",
     };
     return colors[priority as keyof typeof colors] || "";
+  };
+
+  const getPriorityExplanation = (priority: string, answerValue: number, isCritical: boolean, weight: number) => {
+    switch (priority) {
+      case "critical":
+        if (isCritical && answerValue === 1) {
+          return "Marked as CRITICAL because this is a statutory requirement question and received the lowest score (1).";
+        } else if (weight >= 2.0 && answerValue < 5) {
+          return "Marked as CRITICAL because this question has high importance (weight ≥ 2.0) and received a low score (< 5).";
+        }
+        return "Marked as CRITICAL due to compliance requirements.";
+      case "high":
+        return "Marked as HIGH because the answer received the lowest score (1) and requires attention, but it's not a statutory requirement or high-weight question.";
+      case "medium":
+        return "Marked as MEDIUM because the answer received a moderate score (5) and the question has standard importance.";
+      case "low":
+        return "Marked as LOW because the answer received a moderate score (5) with lower priority.";
+      default:
+        return "";
+    }
+  };
+
+  const getTimeframeExplanation = (priority: string) => {
+    switch (priority) {
+      case "critical":
+        return "Timeframe is automatically set to 7 days for critical compliance issues that require immediate attention.";
+      case "high":
+        return "Timeframe is automatically set to 30 days for high-priority issues that need prompt attention.";
+      case "medium":
+        return "Timeframe is automatically set to 90 days for medium-priority improvements.";
+      case "low":
+        return "Timeframe is set to ongoing improvement for low-priority optimizations.";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -179,46 +215,70 @@ export default function AuditReviewPage() {
         <div>
           <h2 className="text-2xl font-bold mb-4">Recommended Actions</h2>
           <div className="space-y-4">
-            {scores.recommendedActions.map((action, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className={getPriorityBadge(action.priority)}>
-                          {action.priority.toUpperCase()}
-                        </Badge>
-                        <span className="text-sm text-gray-600">
-                          Q{action.questionId}
-                        </span>
+            {scores.recommendedActions.map((action, index) => {
+              // Find the question and response to get detailed information
+              const question = questions?.find((q) => q.id === action.questionId);
+              const response = responses.find((r) => r.question_id === action.questionId);
+              const answerValue = response?.answer_value || 0;
+              const isCritical = question?.critical || false;
+              const weight = question?.weight || 1.0;
+              
+              const priorityExplanation = getPriorityExplanation(action.priority, answerValue, isCritical, weight);
+              const timeframeExplanation = getTimeframeExplanation(action.priority);
+              
+              return (
+                <Card key={index}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <Badge className={getPriorityBadge(action.priority)}>
+                              {action.priority.toUpperCase()}
+                            </Badge>
+                            <Info 
+                              className="w-4 h-4 text-gray-400 cursor-help" 
+                              title={priorityExplanation}
+                            />
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            Q{action.questionId}
+                          </span>
+                        </div>
+                        <CardTitle className="text-base">
+                          {action.questionText}
+                        </CardTitle>
                       </div>
-                      <CardTitle className="text-base">
-                        {action.questionText}
-                      </CardTitle>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <span className="text-sm font-medium text-gray-600">
-                      Current Status:
-                    </span>
-                    <p className="text-sm mt-1">{action.currentAnswer}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-600">
-                      Recommendation:
-                    </span>
-                    <p className="text-sm mt-1">{action.recommendation}</p>
-                  </div>
-                  <div className="bg-blue-50 p-3 rounded">
-                    <span className="text-sm font-medium text-blue-900">
-                      ⏱ Timeframe: {action.timeframe}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">
+                        Current Status:
+                      </span>
+                      <p className="text-sm mt-1">{action.currentAnswer}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">
+                        Recommendation:
+                      </span>
+                      <p className="text-sm mt-1">{action.recommendation}</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded">
+                      <div className="flex items-start gap-2">
+                        <span className="text-sm font-medium text-blue-900">
+                          ⏱ Timeframe: {action.timeframe}
+                        </span>
+                        <Info 
+                          className="w-4 h-4 text-blue-600 cursor-help mt-0.5 flex-shrink-0" 
+                          title={timeframeExplanation}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -227,8 +287,8 @@ export default function AuditReviewPage() {
       <div>
         <h2 className="text-2xl font-bold mb-4">All Responses</h2>
         <div className="space-y-3">
-          {responses.map((response) => {
-            const question = questions.find((q) => q.id === response.question_id);
+            {responses.map((response) => {
+              const question = questions?.find((q) => q.id === response.question_id);
             if (!question) return null;
 
             const selectedOption = question.options.find(
