@@ -82,21 +82,8 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
     
     // Prepare table body with 5 columns: Status, Subcategory, Question, Reason for Low Score, Recommended Actions
     const tableBody = category.questions.map(question => {
-      // Debug logging for all questions in Recommended Actions
-      if (question.number === '1.2') {
-        console.log('[PDF] Processing Q1.2 in Recommended Actions:', {
-          category: question.category,
-          subcategory: question.subcategory,
-          score: question.score,
-          color: question.color,
-          hasScoreExamples: !!question.score_examples,
-          scoreExamplesLength: question.score_examples?.length || 0,
-          scoreExamples: question.score_examples
-        });
-      }
-      
-      const reasonText = getReasonForLowScore(question);
-      const recommendedAction = getRecommendedAction(question, data);
+    const reasonText = getReasonForLowScore(question);
+    const recommendedAction = getRecommendedAction(question, data);
       
       return [
         '', // Status column - will be drawn with traffic light
@@ -191,17 +178,6 @@ function getReasonForLowScore(question: QuestionResponseData): string {
       ex => ex.score_level === scoreLevel
     );
     
-    // Debug logging
-    if (question.number === '1.2') {
-      console.log('[PDF] Q1.2 reason_text check:', {
-        scoreLevel,
-        hasMatchingExample: !!matchingExample,
-        matchingExample,
-        hasReasonText: matchingExample?.reason_text ? true : false,
-        reasonTextLength: matchingExample?.reason_text?.length || 0
-      });
-    }
-    
     if (matchingExample && matchingExample.reason_text && matchingExample.reason_text.trim()) {
       return matchingExample.reason_text.trim();
     }
@@ -237,17 +213,6 @@ function getRecommendedAction(question: QuestionResponseData, data?: ReportData)
     const matchingExample = question.score_examples.find(
       ex => ex.score_level === scoreLevel
     );
-    
-    // Debug logging
-    if (question.number === '1.2') {
-      console.log('[PDF] Q1.2 report_action check:', {
-        scoreLevel,
-        hasMatchingExample: !!matchingExample,
-        matchingExample,
-        hasReportAction: matchingExample?.report_action ? true : false,
-        reportActionLength: matchingExample?.report_action?.length || 0
-      });
-    }
     
     if (matchingExample && matchingExample.report_action && matchingExample.report_action.trim()) {
       return matchingExample.report_action.trim();

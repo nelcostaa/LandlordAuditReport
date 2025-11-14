@@ -101,18 +101,6 @@ export default function ReportPreviewPage() {
           scores: auditData.scores ? 'present' : 'missing',
         });
         
-        // Debug Q1.2 in fetched data
-        const q12InFetched = auditData.questions?.find((q: any) => q.id === '1.2');
-        if (q12InFetched) {
-          console.log('[PDF] Q1.2 in fetched audit data:', {
-            hasScoreExamples: !!q12InFetched.score_examples,
-            scoreExamplesLength: q12InFetched.score_examples?.length || 0,
-            scoreExamples: q12InFetched.score_examples
-          });
-        } else {
-          console.warn('[PDF] Q1.2 NOT FOUND in fetched audit data questions');
-        }
-        
         // Validate required data exists
         if (!auditData.audit) {
           throw new Error('Audit data missing');
