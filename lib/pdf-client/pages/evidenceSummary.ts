@@ -64,10 +64,11 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
     doc.text(category.name, startX, yPos);
     yPos += 12;
     
-    // Table body: only subcategory name and empty string for traffic light
+    // Table body: Status (traffic light) first, then Subcategory name
+    // Swapped columns: Status on left, Subcategory on right
     const tableBody = sortedSubcats.map(subcat => [
+      '', // Empty for traffic light (Status column - now on left)
       subcat.name,
-      '', // Empty for traffic light
     ]);
     
     // Extract colors for didDrawCell
@@ -75,27 +76,20 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
     
     autoTable(doc, {
       startY: yPos,
-      head: [['Subcategory', 'Status']],
+      head: [], // Remove header row as requested
       body: tableBody,
       theme: 'grid',
-      headStyles: {
-        fillColor: hexToRgb(COLORS.paleBlue),
-        textColor: hexToRgb(COLORS.black),
-        fontSize: 11,
-        fontStyle: 'bold',
-        halign: 'center',
-      },
       bodyStyles: {
         fontSize: 10,
         textColor: hexToRgb(COLORS.black),
       },
       columnStyles: {
-        0: { cellWidth: 130 }, // Subcategory takes most space
-        1: { cellWidth: 40, halign: 'center' }, // Status with traffic light
+        0: { cellWidth: 40, halign: 'center' }, // Status with traffic light (now on left)
+        1: { cellWidth: 130 }, // Subcategory takes most space (now on right)
       },
       didDrawCell: (cellData) => {
-        // Draw traffic lights in Status column (index 1)
-        if (cellData.column.index === 1 && cellData.section === 'body') {
+        // Draw traffic lights in Status column (index 0 - now on left)
+        if (cellData.column.index === 0 && cellData.section === 'body') {
           const rowIndex = cellData.row.index;
           if (rowIndex < rowColors.length) {
             const color = rowColors[rowIndex] as 'red' | 'orange' | 'green';

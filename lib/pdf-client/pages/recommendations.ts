@@ -1,10 +1,11 @@
 // Recommended Actions Page (Grouped by category per James feedback)
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { ReportData, SubcategoryScore } from '@/lib/pdf/formatters';
+import { ReportData, SubcategoryScore, QuestionResponseData } from '@/lib/pdf/formatters';
 import { COLORS, FONTS, LAYOUT, setTextColorHex } from '../styles';
 import { addPageHeader } from '../components/header';
 import { addPageFooter } from '../components/footer';
+import { drawTrafficLight } from '../components/trafficLight';
 import { addNewPageIfNeeded } from '../utils';
 
 /**
@@ -26,14 +27,7 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
   doc.setFont('helvetica', FONTS.h1.style);
   setTextColorHex(doc, COLORS.primaryGreen);
   doc.text('Recommended Actions', startX, yPos);
-  yPos += 12;
-  
-  // Subtitle
-  doc.setFontSize(FONTS.h2.size);
-  doc.setFont('helvetica', FONTS.h2.style);
-  setTextColorHex(doc, COLORS.blue);
-  doc.text('Suggestions for Improvement', startX, yPos);
-  yPos += 15;
+  yPos += 20;
   
   // Introductory text
   doc.setFontSize(FONTS.body.size);
@@ -51,33 +45,34 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
   doc.text(wrapped2, startX, yPos);
   yPos += wrapped2.length * 4 + 20;
   
-  // Filter only red and orange subcategories
-  const lowScoringSubcats = data.subcategoryScores.filter(
-    subcat => subcat.color === 'red' || subcat.color === 'orange'
-  );
+  // Get all red and orange questions (low scoring)
+  const allQuestions = [
+    ...data.questionResponses.red,
+    ...data.questionResponses.orange,
+  ];
   
-  // Group by category
+  // Group questions by category
   const categories = [
     { 
       name: 'Documentation', 
-      subcats: lowScoringSubcats.filter(s => s.category === 'Documentation') 
+      questions: allQuestions.filter(q => q.category === 'Documentation') 
     },
     { 
       name: 'Landlord-Tenant Communication', 
-      subcats: lowScoringSubcats.filter(s => s.category === 'Landlord-Tenant Communication') 
+      questions: allQuestions.filter(q => q.category === 'Landlord-Tenant Communication') 
     },
     { 
       name: 'Evidence Gathering Systems and Procedures', 
-      subcats: lowScoringSubcats.filter(s => s.category === 'Evidence Gathering Systems and Procedures') 
+      questions: allQuestions.filter(q => q.category === 'Evidence Gathering Systems and Procedures') 
     },
   ];
   
   // Generate one table per category
   categories.forEach((category) => {
-    if (category.subcats.length === 0) return;
+    if (category.questions.length === 0) return;
     
     // Category header
-    yPos = addNewPageIfNeeded(doc, yPos, 40);
+    yPos = addNewPageIfNeeded(doc, yPos, 50);
     
     doc.setFontSize(FONTS.h2.size);
     doc.setFont('helvetica', FONTS.h2.style);
@@ -85,37 +80,58 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
     doc.text(category.name, startX, yPos);
     yPos += 12;
     
-    // Table body: subcategory with score + suggestion
-    const tableBody = category.subcats.map(subcat => {
-      // First column: Subcategory name + score on separate lines
-      const subcatText = `${subcat.name}\nScore: ${subcat.score.toFixed(2)}`;
+    // Prepare table body with 5 columns: Status, Subcategory, Question, Reason for Low Score, Recommended Actions
+    const tableBody = category.questions.map(question => {
+      const reasonText = getReasonForLowScore(question);
+      const recommendedAction = getRecommendedAction(question);
       
-      // Second column: Suggestion (placeholder for now - will pull from spreadsheet logic)
-      const suggestion = generateSuggestion(subcat, data);
-      
-      return [subcatText, `• ${suggestion}`];
+      return [
+        '', // Status column - will be drawn with traffic light
+        question.subcategory || '',
+        question.questionText || '',
+        reasonText,
+        recommendedAction,
+      ];
     });
+    
+    // Extract colors for didDrawCell
+    const rowColors = category.questions.map(q => q.color as 'red' | 'orange');
     
     autoTable(doc, {
       startY: yPos,
-      head: [['Subcategory', 'Suggestions for Improvement']],
+      head: [['Status', 'Subcategory', 'Question', 'Reason for Low Score', 'Recommended Actions']],
       body: tableBody,
       theme: 'grid',
       headStyles: {
         fillColor: hexToRgb(COLORS.paleBlue),
         textColor: hexToRgb(COLORS.black),
-        fontSize: 11,
+        fontSize: 10,
         fontStyle: 'bold',
-        halign: 'left',
+        halign: 'center',
       },
       bodyStyles: {
-        fontSize: 10,
+        fontSize: 9,
         textColor: hexToRgb(COLORS.black),
-        cellPadding: 4,
+        cellPadding: 3,
       },
       columnStyles: {
-        0: { cellWidth: 60, valign: 'top' },
-        1: { cellWidth: 110, valign: 'top' },
+        0: { cellWidth: 25, halign: 'center' }, // Status (traffic light)
+        1: { cellWidth: 35, valign: 'top' }, // Subcategory
+        2: { cellWidth: 50, valign: 'top' }, // Question
+        3: { cellWidth: 40, valign: 'top' }, // Reason for Low Score
+        4: { cellWidth: 50, valign: 'top' }, // Recommended Actions
+      },
+      didDrawCell: (cellData) => {
+        // Draw traffic lights in Status column (index 0)
+        if (cellData.column.index === 0 && cellData.section === 'body') {
+          const rowIndex = cellData.row.index;
+          if (rowIndex < rowColors.length) {
+            const color = rowColors[rowIndex];
+            const cellX = cellData.cell.x + cellData.cell.width / 2;
+            const cellY = cellData.cell.y + cellData.cell.height / 2;
+            drawTrafficLight(doc, cellX, cellY, color, 2);
+          }
+        }
       },
       margin: { 
         left: startX,
@@ -128,8 +144,8 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
     yPos = (doc as any).lastAutoTable.finalY + 15;
   });
   
-  // If no low-scoring subcategories exist
-  if (lowScoringSubcats.length === 0) {
+  // If no low-scoring questions exist
+  if (allQuestions.length === 0) {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'italic');
     setTextColorHex(doc, COLORS.mediumGray);
@@ -140,111 +156,74 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
 }
 
 /**
- * Generate suggestion text based on subcategory score
- * Uses Scoring Guidance (reason_text) from Edit Questions based on the actual answer score
+ * Get reason for low score from question's score_examples
  */
-function generateSuggestion(subcat: SubcategoryScore, data: ReportData): string {
-  // Find questions for this subcategory (across all color groups)
-  const allQuestions = [
-    ...data.questionResponses.red,
-    ...data.questionResponses.orange,
-    ...data.questionResponses.green,
-  ];
-  
-  const subcatQuestions = allQuestions.filter(
-    q => q.subcategory === subcat.name && q.category === subcat.category
-  );
-  
-  // Find questions with score_examples (Scoring Guidance)
-  // Use the question with the worst score (lowest) to get the most relevant guidance
-  // Sort by score (lowest first) to prioritize worst-scoring questions
-  const questionsWithGuidance = subcatQuestions
-    .filter(q => q.score_examples && q.score_examples.length > 0)
-    .sort((a, b) => a.score - b.score); // Sort by score ascending (worst first)
-  
-  for (const question of questionsWithGuidance) {
-    if (question.score_examples && question.score_examples.length > 0) {
-      // Map answer score to score_level
-      // score 1 = 'low', score 5 = 'medium', score 10 = 'high'
-      let scoreLevel: 'low' | 'medium' | 'high';
-      if (question.score === 1) {
-        scoreLevel = 'low';
-      } else if (question.score === 5) {
-        scoreLevel = 'medium';
-      } else {
-        scoreLevel = 'high';
-      }
-      
-      // Find the matching score_example
-      const matchingExample = question.score_examples.find(
-        ex => ex.score_level === scoreLevel
-      );
-      
-      if (matchingExample) {
-        // Combine reason_text and report_action from Scoring Guidance
-        const parts: string[] = [];
-        
-        // Add reason text if available
-        if (matchingExample.reason_text && matchingExample.reason_text.trim()) {
-          // Determine label based on score level
-          let reasonLabel = '';
-          if (scoreLevel === 'low') {
-            reasonLabel = 'Reasons for low score';
-          } else if (scoreLevel === 'medium') {
-            reasonLabel = 'Reasons for medium score';
-          } else {
-            reasonLabel = 'Reasons for high score';
-          }
-          parts.push(`${reasonLabel}: ${matchingExample.reason_text}`);
-        }
-        
-        // Add action to take if available
-        if (matchingExample.report_action && matchingExample.report_action.trim()) {
-          parts.push(`Action to take: ${matchingExample.report_action}`);
-        }
-        
-        // Return combined text
-        if (parts.length > 0) {
-          return parts.join(' ');
-        }
-      }
-    }
+function getReasonForLowScore(question: QuestionResponseData): string {
+  if (!question.score_examples || question.score_examples.length === 0) {
+    return '';
   }
   
-  // Fallback 1: Try using CSV data (report_action, red_score_example, orange_score_example)
-  const questionWithAction = subcatQuestions.find(q => q.report_action);
-  if (questionWithAction && questionWithAction.report_action) {
-    return questionWithAction.report_action;
-  }
-  
-  // Fallback 2: Try using score-specific examples from CSV
-  if (subcat.color === 'red') {
-    const questionWithRedExample = subcatQuestions.find(q => q.red_score_example);
-    if (questionWithRedExample && questionWithRedExample.red_score_example) {
-      return questionWithRedExample.red_score_example;
-    }
-  } else if (subcat.color === 'orange') {
-    const questionWithOrangeExample = subcatQuestions.find(q => q.orange_score_example);
-    if (questionWithOrangeExample && questionWithOrangeExample.orange_score_example) {
-      return questionWithOrangeExample.orange_score_example;
-    }
-  }
-  
-  // Fallback 3: Check suggested services
-  const service = data.suggestedServices.find(
-    s => s.lowScoringArea.toLowerCase().includes(subcat.name.toLowerCase())
-  );
-  
-  if (service) {
-    return service.suggestedService;
-  }
-  
-  // Final fallback: Generic suggestions based on score/color
-  if (subcat.color === 'red') {
-    return `Statutory requirement improvement needed in ${subcat.name}. Immediate professional review recommended.`;
+  // Map answer score to score_level
+  // score 1 = 'low', score 5 = 'medium', score 10 = 'high'
+  let scoreLevel: 'low' | 'medium' | 'high';
+  if (question.score === 1) {
+    scoreLevel = 'low';
+  } else if (question.score === 5) {
+    scoreLevel = 'medium';
   } else {
-    return `Areas for improvement identified in ${subcat.name}. Consider implementing best practices.`;
+    scoreLevel = 'high';
   }
+  
+  // Find the matching score_example
+  const matchingExample = question.score_examples.find(
+    ex => ex.score_level === scoreLevel
+  );
+  
+  if (matchingExample && matchingExample.reason_text) {
+    return matchingExample.reason_text.trim();
+  }
+  
+  // Fallback to CSV data
+  if (question.color === 'red' && question.red_score_example) {
+    return question.red_score_example;
+  } else if (question.color === 'orange' && question.orange_score_example) {
+    return question.orange_score_example;
+  }
+  
+  return '';
+}
+
+/**
+ * Get recommended action from question's score_examples or report_action
+ */
+function getRecommendedAction(question: QuestionResponseData): string {
+  // First priority: Use report_action from score_examples
+  if (question.score_examples && question.score_examples.length > 0) {
+    // Map answer score to score_level
+    let scoreLevel: 'low' | 'medium' | 'high';
+    if (question.score === 1) {
+      scoreLevel = 'low';
+    } else if (question.score === 5) {
+      scoreLevel = 'medium';
+    } else {
+      scoreLevel = 'high';
+    }
+    
+    const matchingExample = question.score_examples.find(
+      ex => ex.score_level === scoreLevel
+    );
+    
+    if (matchingExample && matchingExample.report_action) {
+      return matchingExample.report_action.trim();
+    }
+  }
+  
+  // Fallback: Use direct report_action from CSV
+  if (question.report_action) {
+    return question.report_action.trim();
+  }
+  
+  return '';
 }
 
 function hexToRgb(hex: string): [number, number, number] {

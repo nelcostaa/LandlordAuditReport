@@ -95,7 +95,7 @@ export async function detailedResults(doc: jsPDF, data: ReportData): Promise<voi
   doc.setFontSize(FONTS.h1.size);
   doc.setFont('helvetica', FONTS.h1.style);
   setTextColorHex(doc, COLORS.primaryGreen);
-  doc.text('Detailed Results', startX, yPos);
+  doc.text('A Reminder of Your Answers', startX, yPos);
   yPos += 20;
   
   // Introduction

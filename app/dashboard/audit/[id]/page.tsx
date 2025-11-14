@@ -91,7 +91,7 @@ export default function AuditReviewPage() {
   const getPriorityBadge = (priority: string) => {
     const colors = {
       critical: "bg-red-600 text-white",
-      high: "bg-orange-500 text-white",
+      high: "bg-red-500 text-white",
       medium: "bg-yellow-500 text-white",
       low: "bg-blue-500 text-white",
     };
@@ -121,7 +121,7 @@ export default function AuditReviewPage() {
   const getTimeframeExplanation = (priority: string) => {
     switch (priority) {
       case "critical":
-        return "Timeframe is automatically set to 7 days for critical compliance issues that require immediate attention.";
+        return "Timeframe is automatically set to 7 days for statutory requirement compliance issues that require immediate attention.";
       case "high":
         return "Timeframe is automatically set to 30 days for high-priority issues that need prompt attention.";
       case "medium":
@@ -234,7 +234,7 @@ export default function AuditReviewPage() {
                         <div className="flex items-center gap-2 mb-2">
                           <div className="flex items-center gap-1.5">
                             <Badge className={getPriorityBadge(action.priority)}>
-                              {action.priority.toUpperCase()}
+                              {action.priority === "critical" ? "STATUTORY REQUIREMENT" : action.priority.toUpperCase()}
                             </Badge>
                             <div className="relative group">
                               <Info className="w-4 h-4 text-gray-400 cursor-help hover:text-gray-600 transition-colors" />

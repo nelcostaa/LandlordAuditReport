@@ -110,7 +110,7 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
     
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    setTextColorHex(doc, COLORS.orange);
+    setTextColorHex(doc, '#dc2626'); // Red for HIGH priority consistency
     doc.text('SHORT-TERM ACTIONS (1-4 Weeks)', startX + 8, headerY + 8);
     yPos += 12;
     
@@ -138,7 +138,7 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
       // Left column: orange_score_example (from Column V/W in spreadsheet)
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      setTextColorHex(doc, COLORS.orange);
+      setTextColorHex(doc, '#dc2626'); // Red for HIGH priority consistency
       doc.text(leftWrapped, startX + 8, yPos + 6);
       
       // Right column: report_action (from Column X in spreadsheet)
