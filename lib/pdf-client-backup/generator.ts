@@ -3,12 +3,11 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { ReportData } from '@/lib/pdf/formatters';
 import { coverPage } from './pages/coverPage';
-import { auditScope } from './pages/auditScope';
-// import { executiveSummary } from './pages/executiveSummary'; // REMOVED
-// import { criticalFindings } from './pages/criticalFindings'; // REMOVED
-// import { methodology } from './pages/methodology'; // REMOVED (replaced with auditScope)
-// import { riskRating } from './pages/riskRating'; // REMOVED
-// import { complianceStatus } from './pages/complianceStatus'; // REMOVED
+import { executiveSummary } from './pages/executiveSummary';
+import { criticalFindings } from './pages/criticalFindings';
+import { methodology } from './pages/methodology';
+import { riskRating } from './pages/riskRating';
+import { complianceStatus } from './pages/complianceStatus';
 import { evidenceSummary } from './pages/evidenceSummary';
 import { introduction } from './pages/introduction';
 import { results } from './pages/results';
@@ -39,27 +38,27 @@ export async function generateCompletePDF(data: ReportData): Promise<jsPDF> {
     console.log('[PDF Generator] Generating cover page...');
     await coverPage(doc, data);
     
-    // Page 2: Audit Scope (simplified - removed full methodology per James feedback)
-    console.log('[PDF Generator] Generating audit scope...');
-    await auditScope(doc, data);
+    // Page 2+: Executive Summary
+    console.log('[PDF Generator] Generating executive summary...');
+    await executiveSummary(doc, data);
     
-    // REMOVED PER JAMES FEEDBACK: Executive Summary
-    // console.log('[PDF Generator] Generating executive summary...');
-    // await executiveSummary(doc, data);
+    // Critical Findings (only if red questions exist)
+    if (data.questionResponses.red.length > 0) {
+      console.log('[PDF Generator] Generating critical findings...');
+      await criticalFindings(doc, data);
+    }
     
-    // REMOVED PER JAMES FEEDBACK: Critical Findings Summary
-    // if (data.questionResponses.red.length > 0) {
-    //   console.log('[PDF Generator] Generating critical findings...');
-    //   await criticalFindings(doc, data);
-    // }
+    // Methodology
+    console.log('[PDF Generator] Generating methodology...');
+    await methodology(doc, data);
     
-    // REMOVED PER JAMES FEEDBACK: Understanding Your Risk Rating (tiers relate to product tiers, not risk)
-    // console.log('[PDF Generator] Generating risk rating...');
-    // await riskRating(doc, data);
+    // Risk Rating
+    console.log('[PDF Generator] Generating risk rating...');
+    await riskRating(doc, data);
     
-    // REMOVED PER JAMES FEEDBACK: Legal Compliance Status
-    // console.log('[PDF Generator] Generating compliance status...');
-    // await complianceStatus(doc, data);
+    // Compliance Status
+    console.log('[PDF Generator] Generating compliance status...');
+    await complianceStatus(doc, data);
     
     // Evidence Summary
     console.log('[PDF Generator] Generating evidence summary...');
