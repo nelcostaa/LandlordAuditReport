@@ -14,6 +14,10 @@ export interface Question {
     label: string;
   }[];
   motivation_learning_point?: string;
+  // Report action data from CSV import
+  red_score_example?: string | null;
+  orange_score_example?: string | null;
+  report_action?: string | null;
 }
 
 export const CATEGORIES = {

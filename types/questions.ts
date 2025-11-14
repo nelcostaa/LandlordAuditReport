@@ -20,6 +20,10 @@ export interface QuestionTemplate {
   created_at: Date;
   updated_at: Date;
   is_active: boolean;
+  // Report action columns from CSV import
+  red_score_example: string | null;
+  orange_score_example: string | null;
+  report_action: string | null;
 }
 
 export interface AnswerOption {

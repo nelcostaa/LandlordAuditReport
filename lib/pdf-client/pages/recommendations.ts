@@ -140,10 +140,42 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
 
 /**
  * Generate suggestion text based on subcategory score
- * This matches the logic from the spreadsheet columns U, V, W
+ * Uses rich data from CSV import (report_action, red_score_example, orange_score_example)
  */
 function generateSuggestion(subcat: SubcategoryScore, data: ReportData): string {
-  // Find if there's a suggested service for this subcategory
+  // Find questions for this subcategory (across all color groups)
+  const allQuestions = [
+    ...data.questionResponses.red,
+    ...data.questionResponses.orange,
+    ...data.questionResponses.green,
+  ];
+  
+  const subcatQuestions = allQuestions.filter(
+    q => q.subcategory === subcat.name && q.category === subcat.category
+  );
+  
+  // Find the first question with report_action data
+  const questionWithAction = subcatQuestions.find(q => q.report_action);
+  
+  if (questionWithAction && questionWithAction.report_action) {
+    // Use specific action from CSV
+    return questionWithAction.report_action;
+  }
+  
+  // Try using score-specific examples
+  if (subcat.color === 'red') {
+    const questionWithRedExample = subcatQuestions.find(q => q.red_score_example);
+    if (questionWithRedExample && questionWithRedExample.red_score_example) {
+      return questionWithRedExample.red_score_example;
+    }
+  } else if (subcat.color === 'orange') {
+    const questionWithOrangeExample = subcatQuestions.find(q => q.orange_score_example);
+    if (questionWithOrangeExample && questionWithOrangeExample.orange_score_example) {
+      return questionWithOrangeExample.orange_score_example;
+    }
+  }
+  
+  // Fallback: Check suggested services
   const service = data.suggestedServices.find(
     s => s.lowScoringArea.toLowerCase().includes(subcat.name.toLowerCase())
   );
@@ -152,7 +184,7 @@ function generateSuggestion(subcat: SubcategoryScore, data: ReportData): string 
     return service.suggestedService;
   }
   
-  // Default suggestions based on score/color
+  // Final fallback: Generic suggestions based on score/color
   if (subcat.color === 'red') {
     return `Critical improvement needed in ${subcat.name}. Immediate professional review recommended.`;
   } else {

@@ -30,6 +30,10 @@ export interface QuestionResponseData {
   score: number;
   color: 'red' | 'orange' | 'green';
   comment?: string;
+  // Report action data from CSV import
+  red_score_example?: string | null;
+  orange_score_example?: string | null;
+  report_action?: string | null;
 }
 
 export interface ServiceRecommendation {
@@ -337,6 +341,9 @@ function sortQuestionResponses(
         answer: fallbackAnswer,
         score: response.answer_value,
         color,
+        red_score_example: question.red_score_example,
+        orange_score_example: question.orange_score_example,
+        report_action: question.report_action,
       };
       
       sorted[color].push(questionData);
@@ -353,6 +360,9 @@ function sortQuestionResponses(
       answer: option.label || 'No answer text',
       score: response.answer_value,
       color,
+      red_score_example: question.red_score_example,
+      orange_score_example: question.orange_score_example,
+      report_action: question.report_action,
     };
     
     sorted[color].push(questionData);
