@@ -322,6 +322,15 @@ function sortQuestionResponses(
       return;
     }
     
+    // Debug logging for Q1.2
+    if (question.id === '1.2') {
+      console.log('[Formatters] Q1.2 before transformation:', {
+        hasScoreExamples: !!question.score_examples,
+        scoreExamplesLength: question.score_examples?.length || 0,
+        scoreExamples: question.score_examples
+      });
+    }
+    
     // Validate question has options array
     if (!question.options || !Array.isArray(question.options)) {
       console.error(`[Formatters] Question ${question.id} has no options array:`, question);
