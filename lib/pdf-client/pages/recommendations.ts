@@ -22,7 +22,7 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
   doc.setFontSize(FONTS.h1.size);
   doc.setFont('helvetica', FONTS.h1.style);
   setTextColorHex(doc, COLORS.primaryGreen);
-  doc.text('Recommendations for Improvement', startX, yPos);
+  doc.text('Recommended Actions', startX, yPos);
   yPos += 20;
   
   // Description

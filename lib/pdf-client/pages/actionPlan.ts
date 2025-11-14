@@ -22,7 +22,7 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
   doc.setFontSize(FONTS.h1.size);
   doc.setFont('helvetica', FONTS.h1.style);
   setTextColorHex(doc, COLORS.primaryGreen);
-  doc.text('Priority Action Plan', startX, yPos);
+  doc.text('Suggestions for Improvement', startX, yPos);
   yPos += 20;
   
   // Description
@@ -73,7 +73,7 @@ export async function actionPlan(doc: jsPDF, data: ReportData): Promise<void> {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     setTextColorHex(doc, COLORS.red);
-    doc.text('⚠ IMMEDIATE ACTIONS (0-7 Days)', startX + 8, headerY + 8);
+    doc.text('⚠ CRITICAL - IMMEDIATE ACTIONS (0-7 Days)', startX + 8, headerY + 8);
     yPos += 12;
     
     // Description
