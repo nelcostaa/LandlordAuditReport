@@ -63,7 +63,7 @@ export interface AuditWithDetails extends Audit {
 // Request/Response types
 export interface CreateAuditRequest {
   client_name: string;
-  landlord_email?: string;
+  landlord_email: string;
   property_address: string;
   risk_audit_tier: RiskAuditTier;
   conducted_by: string;

@@ -6,7 +6,7 @@ import { randomUUID } from "crypto";
 
 const createAuditSchema = z.object({
   client_name: z.string().min(1, "Client name is required"),
-  landlord_email: z.string().email("Invalid email").optional().or(z.literal("")),
+  landlord_email: z.string().email("Invalid email").min(1, "Landlord email is required"),
   property_address: z.string().min(1, "Property address is required"),
   risk_audit_tier: z.enum(["tier_0", "tier_1", "tier_2", "tier_3", "tier_4"]),
   conducted_by: z.string().min(1, "Conducted by is required"),
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         ${session.user.id},
         ${token},
         ${data.client_name},
-        ${data.landlord_email || null},
+        ${data.landlord_email},
         ${data.property_address},
         ${data.risk_audit_tier},
         ${data.conducted_by},

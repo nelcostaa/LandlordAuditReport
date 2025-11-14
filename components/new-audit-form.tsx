@@ -13,7 +13,7 @@ import { RiskAuditTier } from "@/types/database";
 
 const formSchema = z.object({
   client_name: z.string().min(1, "Client name is required"),
-  landlord_email: z.string().email("Invalid email").optional().or(z.literal("")),
+  landlord_email: z.string().email("Invalid email").min(1, "Landlord email is required"),
   property_address: z.string().min(1, "Property address is required"),
   risk_audit_tier: z.enum(["tier_0", "tier_1", "tier_2", "tier_3", "tier_4"]),
   conducted_by: z.string().min(1, "Conducted by is required"),
@@ -115,7 +115,7 @@ export function NewAuditForm({ onSuccess, defaultConductedBy }: NewAuditFormProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="landlord_email">Landlord Email (Optional)</Label>
+            <Label htmlFor="landlord_email">Landlord Email *</Label>
             <Input
               id="landlord_email"
               type="email"
