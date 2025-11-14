@@ -28,12 +28,7 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
   doc.text('Recommended Actions', startX, yPos);
   yPos += 15;
   
-  // Subtitle
-  doc.setFontSize(FONTS.h2.size);
-  doc.setFont('helvetica', FONTS.h2.style);
-  setTextColorHex(doc, COLORS.black);
-  doc.text('Suggestions for Improvement', startX, yPos);
-  yPos += 15;
+  // Remove subtitle to avoid duplication with next page title
   
   // Introductory text
   doc.setFontSize(FONTS.body.size);
