@@ -9,6 +9,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let auditId: number | null = null;
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -16,7 +17,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const auditId = parseInt(id);
+    auditId = parseInt(id);
 
     // Get audit details
     const auditResult = await sql`
@@ -119,7 +120,7 @@ export async function GET(
     console.error("Error details:", {
       message: error?.message,
       stack: error?.stack,
-      auditId: id,
+      auditId: auditId,
     });
     return NextResponse.json(
       { 
