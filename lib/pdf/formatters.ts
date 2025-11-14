@@ -364,6 +364,15 @@ function sortQuestionResponses(
       score_examples: question.score_examples,
     };
     
+    // Debug logging for Q1.2 after transformation
+    if (question.id === '1.2') {
+      console.log('[Formatters] Q1.2 after transformation:', {
+        hasScoreExamples: !!questionData.score_examples,
+        scoreExamplesLength: questionData.score_examples?.length || 0,
+        scoreExamples: questionData.score_examples
+      });
+    }
+    
     sorted[color].push(questionData);
   });
   
