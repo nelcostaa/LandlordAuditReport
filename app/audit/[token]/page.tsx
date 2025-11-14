@@ -141,63 +141,6 @@ function AuditFormContent({
   const currentCategoryName = categories[currentCategory];
   const currentQuestions = groupedQuestions[currentCategoryName] || [];
 
-  // Helper function to scroll to first unanswered question in a category
-  const scrollToFirstUnanswered = (categoryQuestions: Question[], allValues: ActualFormData) => {
-    const firstUnanswered = categoryQuestions.find((q) => {
-      const safeKey = `q_${q.id.replace(/\./g, '_')}`;
-      const value = allValues[safeKey as keyof ActualFormData];
-      return value !== 1 && value !== 5 && value !== 10;
-    });
-    
-    if (firstUnanswered) {
-      const element = document.getElementById(`question-${firstUnanswered.id}`);
-      if (element) {
-        const yOffset = -120; // Offset for sticky header
-        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
-    } else {
-      // If all answered, scroll to first question
-      const firstQuestion = categoryQuestions[0];
-      if (firstQuestion) {
-        const element = document.getElementById(`question-${firstQuestion.id}`);
-        if (element) {
-          const yOffset = -120;
-          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
-      }
-    }
-  };
-
-  // Scroll to first question when section changes (only when category actually changes)
-  useEffect(() => {
-    if (shouldScrollRef.current && currentQuestions.length > 0) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
-        const firstQuestionId = currentQuestions[0].id;
-        const element = document.getElementById(`question-${firstQuestionId}`);
-        if (element) {
-          // Scroll with offset to account for sticky header
-          const yOffset = -120;
-          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-          
-          // Focus first radio button for accessibility
-          const firstRadio = element.querySelector('input[type="radio"]') as HTMLInputElement;
-          if (firstRadio) {
-            // Small delay to ensure scroll completes
-            setTimeout(() => {
-              firstRadio.focus();
-            }, 500);
-          }
-        }
-      }, 100);
-      // Reset the flag after scrolling
-      shouldScrollRef.current = false;
-    }
-  }, [currentCategory, currentQuestions]);
-
   // CRITICAL: Replace dots with underscores to avoid React Hook Form dot notation parsing
   // RHF treats "1.1" as nested path { 1: { 1: value } }, causing form state corruption
   const prefixedSchema: Record<string, z.ZodTypeAny> = {};
@@ -300,6 +243,49 @@ function AuditFormContent({
     const prog = total > 0 ? (answered / total) * 100 : 0;
     return { answeredCount: answered, progress: prog };
   }, [allValues, relevantQuestions]);
+
+  // Helper function to scroll to first unanswered question in a category
+  // If all questions are answered, scrolls to the first question
+  const scrollToFirstUnanswered = (categoryQuestions: Question[], allValues: ActualFormData) => {
+    // Find first unanswered question (from top to bottom)
+    const firstUnanswered = categoryQuestions.find((q) => {
+      const safeKey = `q_${q.id.replace(/\./g, '_')}`;
+      const value = allValues[safeKey as keyof ActualFormData];
+      return value !== 1 && value !== 5 && value !== 10;
+    });
+    
+    // If found unanswered question, scroll to it; otherwise scroll to first question
+    const targetQuestion = firstUnanswered || categoryQuestions[0];
+    
+    if (targetQuestion) {
+      const element = document.getElementById(`question-${targetQuestion.id}`);
+      if (element) {
+        const yOffset = -120; // Offset for sticky header
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+        
+        // Focus first radio button for accessibility
+        setTimeout(() => {
+          const firstRadio = element.querySelector('input[type="radio"]') as HTMLInputElement;
+          if (firstRadio) {
+            firstRadio.focus();
+          }
+        }, 500);
+      }
+    }
+  };
+
+  // Scroll to first unanswered question when section changes (only when category actually changes)
+  useEffect(() => {
+    if (shouldScrollRef.current && currentQuestions.length > 0 && allValues) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToFirstUnanswered(currentQuestions, allValues);
+      }, 100);
+      // Reset the flag after scrolling
+      shouldScrollRef.current = false;
+    }
+  }, [currentCategory, currentQuestions, allValues]);
 
   // Scroll spy: detect which question is currently in view
   useEffect(() => {
