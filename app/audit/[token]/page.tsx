@@ -245,7 +245,7 @@ function AuditFormContent({
   }, [allValues, relevantQuestions]);
 
   // Helper function to scroll to first unanswered question in a category
-  // If all questions are answered, scrolls to the last question (better UX - shows where you finished)
+  // If all questions are answered, scrolls to navigation section (Next/Submit buttons)
   const scrollToFirstUnanswered = (categoryQuestions: Question[], allValues: ActualFormData) => {
     // Find first unanswered question (from top to bottom)
     const firstUnanswered = categoryQuestions.find((q) => {
@@ -254,11 +254,9 @@ function AuditFormContent({
       return value !== 1 && value !== 5 && value !== 10;
     });
     
-    // If found unanswered question, scroll to it; otherwise scroll to last question
-    const targetQuestion = firstUnanswered || categoryQuestions[categoryQuestions.length - 1];
-    
-    if (targetQuestion) {
-      const element = document.getElementById(`question-${targetQuestion.id}`);
+    if (firstUnanswered) {
+      // Scroll to first unanswered question
+      const element = document.getElementById(`question-${firstUnanswered.id}`);
       if (element) {
         const yOffset = -120; // Offset for sticky header
         const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
@@ -271,6 +269,14 @@ function AuditFormContent({
             firstRadio.focus();
           }
         }, 500);
+      }
+    } else {
+      // All questions answered - scroll to navigation section
+      const navElement = document.getElementById('section-navigation');
+      if (navElement) {
+        const yOffset = -120; // Offset for sticky header
+        const y = navElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
       }
     }
   };
@@ -780,7 +786,7 @@ function AuditFormContent({
           </div>
 
           {/* Navigation */}
-          <Card>
+          <Card id="section-navigation">
             <CardContent className="pt-6">
               <div className="flex justify-between">
                 <Button
