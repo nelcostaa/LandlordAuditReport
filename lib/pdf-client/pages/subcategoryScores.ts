@@ -35,13 +35,6 @@ export async function subcategoryScores(doc: jsPDF, data: ReportData): Promise<v
   doc.text(wrapped, startX, yPos);
   yPos += wrapped.length * 4 + 20;
   
-  // Main title for grouped charts
-  doc.setFontSize(FONTS.h2.size);
-  doc.setFont('helvetica', FONTS.h2.style);
-  setTextColorHex(doc, COLORS.blue);
-  doc.text('Landlord Legal Audit - Performance by Category', startX, yPos);
-  yPos += 15;
-  
   // Group subcategories by category
   const categories = [
     { name: 'Documentation', subcats: data.subcategoryScores.filter(s => s.category === 'Documentation') },
