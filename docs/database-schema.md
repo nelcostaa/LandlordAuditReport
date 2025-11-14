@@ -194,8 +194,8 @@
 | `id` | `SERIAL` | **PRIMARY KEY** | Auto-incrementing example ID |
 | `question_template_id` | `INTEGER` | `NOT NULL`, **FK → `question_templates(id)`** `ON DELETE CASCADE` | Parent question |
 | `score_level` | `VARCHAR(20)` | `NOT NULL`, `CHECK IN ('low', 'medium', 'high')` | Score level (maps to 1, 5, 10) |
-| `reason_text` | `TEXT` | `NOT NULL` | Reason for this score level |
-| `report_action` | `TEXT` | `NULL` | Recommended action for this score level |
+| `reason_text` | `TEXT` | `NOT NULL` | Reason for this score level (required for all levels) |
+| `report_action` | `TEXT` | `NULL` | Recommended action for this score level (available for low, medium, high) |
 | `created_at` | `TIMESTAMP` | `DEFAULT NOW()` | Example creation timestamp |
 
 **Foreign Keys:**
@@ -313,14 +313,18 @@ users (1) ──────< (N) audits
 ### Question Management (Admin)
 1. Admin creates/edits question in `question_templates`
 2. Admin adds answer options in `question_answer_options`
-3. Admin adds scoring guidance in `question_score_examples` with `reason_text` and `report_action` for each score level (low, medium, high)
+3. Admin adds scoring guidance in `question_score_examples`:
+   - `reason_text` (required) for each score level: low, medium, high
+   - `report_action` (optional) for each score level: low, medium, high
 
 ### Audit Flow
 1. Auditor creates `audit` record → generates unique `token`
 2. Landlord accesses form via token → sees questions from `question_templates` (filtered by tier)
 3. Landlord submits answers → stored in `form_responses`
 4. System calculates scores → stored in `scores`
-5. PDF generation uses `question_score_examples` with `reason_text` and `report_action` for each score level
+5. PDF generation uses `question_score_examples`:
+   - `reason_text` for "Reason for Low Score" column (based on actual score: low/medium/high)
+   - `report_action` for "Recommended Actions" column (based on actual score: low/medium/high)
 
 ---
 
