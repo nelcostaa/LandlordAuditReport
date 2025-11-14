@@ -125,7 +125,7 @@ export function getPriorityColor(priority: 1 | 2 | 3 | 4): string {
  */
 export function getPriorityLabel(priority: 1 | 2 | 3 | 4): string {
   switch (priority) {
-    case 1: return 'CRITICAL';
+    case 1: return 'STATUTORY REQUIREMENT';
     case 2: return 'HIGH';
     case 3: return 'MEDIUM';
     case 4: return 'LOW';

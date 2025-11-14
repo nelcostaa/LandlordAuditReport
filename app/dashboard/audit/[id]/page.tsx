@@ -102,11 +102,11 @@ export default function AuditReviewPage() {
     switch (priority) {
       case "critical":
         if (isCritical && answerValue === 1) {
-          return "Marked as CRITICAL because this is a statutory requirement question and received the lowest score (1).";
+          return "Marked as STATUTORY REQUIREMENT because this is a statutory requirement question and received the lowest score (1).";
         } else if (weight >= 2.0 && answerValue < 5) {
-          return "Marked as CRITICAL because this question has high importance (weight ≥ 2.0) and received a low score (< 5).";
+          return "Marked as STATUTORY REQUIREMENT because this question has high importance (weight ≥ 2.0) and received a low score (< 5).";
         }
-        return "Marked as CRITICAL due to compliance requirements.";
+        return "Marked as STATUTORY REQUIREMENT due to compliance requirements.";
       case "high":
         return "Marked as HIGH because the answer received the lowest score (1) and requires attention, but it's not a statutory requirement or high-weight question.";
       case "medium":
@@ -305,7 +305,7 @@ export default function AuditReviewPage() {
                     <div className="flex gap-2 shrink-0">
                       {question.critical && (
                         <Badge variant="destructive" className="text-xs">
-                          CRITICAL
+                          STATUTORY REQUIREMENT
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-xs">

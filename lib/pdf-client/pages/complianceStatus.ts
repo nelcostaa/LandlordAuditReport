@@ -70,7 +70,7 @@ export async function complianceStatus(doc: jsPDF, data: ReportData): Promise<vo
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     setTextColorHex(doc, COLORS.red);
-    doc.text(`CRITICAL: ${statutoryViolations} Statutory Violations`, startX + 10, yPos + 10);
+    doc.text(`STATUTORY REQUIREMENT: ${statutoryViolations} Statutory Violations`, startX + 10, yPos + 10);
     
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');

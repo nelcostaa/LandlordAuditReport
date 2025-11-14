@@ -121,7 +121,7 @@ export async function detailedResults(doc: jsPDF, data: ReportData): Promise<voi
   doc.text('Red (Low Scoring - 1-3):', bulletX + 8, yPos);
   doc.setFont('helvetica', 'normal');
   setTextColorHex(doc, COLORS.black);
-  doc.text('Critical issues requiring immediate attention and corrective action.', bulletX + 8, yPos + 4);
+  doc.text('Statutory requirement issues requiring immediate attention and corrective action.', bulletX + 8, yPos + 4);
   yPos += 10;
   
   drawTrafficLight(doc, bulletX, yPos - 1.5, 'orange', 1.5);
@@ -153,13 +153,13 @@ export async function detailedResults(doc: jsPDF, data: ReportData): Promise<voi
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     setTextColorHex(doc, COLORS.darkGreen);
-    doc.text('Excellent! You have no critical issues. All questions scored above the red threshold.', startX, yPos);
+    doc.text('Excellent! You have no statutory requirement issues. All questions scored above the red threshold.', startX, yPos);
     yPos += 15;
   } else {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'italic');
     setTextColorHex(doc, COLORS.mediumGray);
-    const redIntro = 'These questions received low scores (1-3) and require immediate attention. Critical compliance issues that could result in fines or legal action.';
+    const redIntro = 'These questions received low scores (1-3) and require immediate attention. Statutory requirement compliance issues that could result in fines or legal action.';
     const redIntroWrapped = doc.splitTextToSize(redIntro, contentWidth);
     doc.text(redIntroWrapped, startX, yPos);
     yPos += redIntroWrapped.length * 4 + 10;

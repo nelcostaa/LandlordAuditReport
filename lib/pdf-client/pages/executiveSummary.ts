@@ -208,7 +208,7 @@ export async function executiveSummary(doc: jsPDF, data: ReportData): Promise<vo
     doc.setFontSize(FONTS.h3.size);
     doc.setFont('helvetica', FONTS.h3.style);
     setTextColorHex(doc, COLORS.black);
-    doc.text('Critical Findings Requiring Immediate Action', startX, yPos);
+    doc.text('Statutory Requirement Findings Requiring Immediate Action', startX, yPos);
     yPos += 10;
     
     // List up to 5 critical findings

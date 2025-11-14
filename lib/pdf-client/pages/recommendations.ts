@@ -235,7 +235,7 @@ function generateSuggestion(subcat: SubcategoryScore, data: ReportData): string 
   
   // Final fallback: Generic suggestions based on score/color
   if (subcat.color === 'red') {
-    return `Critical improvement needed in ${subcat.name}. Immediate professional review recommended.`;
+    return `Statutory requirement improvement needed in ${subcat.name}. Immediate professional review recommended.`;
   } else {
     return `Areas for improvement identified in ${subcat.name}. Consider implementing best practices.`;
   }

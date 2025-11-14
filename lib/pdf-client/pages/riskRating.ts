@@ -39,7 +39,7 @@ const TIER_DEFINITIONS: TierInfo[] = [
   {
     number: 3,
     title: 'High Risk',
-    description: 'Poor compliance with multiple critical gaps. Immediate action required. High probability of financial penalties and enforcement intervention.',
+    description: 'Poor compliance with multiple statutory requirement gaps. Immediate action required. High probability of financial penalties and enforcement intervention.',
     implication: 'Insurance: Premium loading or coverage restrictions. Lending: Difficult. Licensing: At risk.',
     color: COLORS.orange,
   },
