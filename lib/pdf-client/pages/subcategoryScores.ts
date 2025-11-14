@@ -53,13 +53,14 @@ export async function subcategoryScores(doc: jsPDF, data: ReportData): Promise<v
     if (category.subcats.length === 0) return;
     
     // Category header (check if we have space for at least header + 2 bars)
-    yPos = addNewPageIfNeeded(doc, yPos, 20 + (Math.min(2, category.subcats.length) * 10));
+    yPos = addNewPageIfNeeded(doc, yPos, 25 + (Math.min(2, category.subcats.length) * 10));
     
-    doc.setFontSize(FONTS.h3.size);
-    doc.setFont('helvetica', FONTS.h3.style);
-    setTextColorHex(doc, COLORS.darkGray);
+    // Category heading - larger and more prominent per James feedback
+    doc.setFontSize(FONTS.h2.size); // Increased from h3 to h2 (15 vs 13)
+    doc.setFont('helvetica', FONTS.h2.style);
+    setTextColorHex(doc, COLORS.blue); // Changed from darkGray to blue for prominence
     doc.text(category.name, startX, yPos);
-    yPos += 10;
+    yPos += 14; // Increased spacing from 10 to 14
     
     // Draw bars for each subcategory
     category.subcats.forEach((subcat, idx) => {
@@ -72,14 +73,14 @@ export async function subcategoryScores(doc: jsPDF, data: ReportData): Promise<v
       const maxBarWidth = (contentWidth - 10) - labelWidth - 15; // Reserve space for label and score
       const barWidth = (subcat.score / 10) * maxBarWidth;
       
-      // Subcategory name (left side, aligned with bar)
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
+      // Subcategory name (left side, aligned with bar) - larger and clearer per James feedback
+      doc.setFontSize(10); // Increased from 9 to 10 for better readability
+      doc.setFont('helvetica', 'bold'); // Changed from 'normal' to 'bold' for clarity
       const [rBlack, gBlack, bBlack] = hexToRgb(COLORS.black);
       doc.setTextColor(rBlack, gBlack, bBlack);
       
-      // Truncate if too long
-      const subcatName = subcat.name.length > 30 ? subcat.name.substring(0, 27) + '...' : subcat.name;
+      // Truncate if too long (slightly longer limit since font is larger)
+      const subcatName = subcat.name.length > 28 ? subcat.name.substring(0, 25) + '...' : subcat.name;
       
       // Wrap to max 2 lines if needed
       const wrapped = doc.splitTextToSize(subcatName, labelWidth - 2);
@@ -111,7 +112,7 @@ export async function subcategoryScores(doc: jsPDF, data: ReportData): Promise<v
       yPos += barHeight + 4;
     });
     
-    yPos += 8; // Space between categories
+    yPos += 12; // Increased space between categories from 8 to 12
   });
   
   addPageFooter(doc);
