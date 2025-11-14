@@ -75,7 +75,7 @@ async function importCSVReportData() {
           WHERE question_number = ${questionNo}
         `;
 
-        if (result.rowCount > 0) {
+        if (result.rowCount && result.rowCount > 0) {
           console.log(`   ✅ Q${questionNo}: Updated`);
           updated++;
         } else {
