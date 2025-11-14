@@ -57,7 +57,6 @@ export async function GET(
       FROM question_templates qt
       WHERE qt.is_active = TRUE
         AND qt.applicable_tiers @> ${JSON.stringify([tier])}::jsonb
-      GROUP BY qt.id
       ORDER BY qt.category, qt.question_number
     `;
 
