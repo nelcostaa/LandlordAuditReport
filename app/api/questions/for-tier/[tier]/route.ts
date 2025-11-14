@@ -32,22 +32,29 @@ export async function GET(
         qt.weight,
         qt.is_critical,
         qt.motivation_learning_point,
-        json_agg(
-          DISTINCT jsonb_build_object(
-            'value', qao.score_value,
-            'label', qao.option_text
-          ) ORDER BY qao.option_order
-        ) FILTER (WHERE qao.id IS NOT NULL AND qao.is_example = FALSE) as options,
-        json_agg(
-          DISTINCT jsonb_build_object(
-            'score_level', qse.score_level,
-            'reason_text', qse.reason_text,
-            'report_action', qse.report_action
-          ) ORDER BY qse.score_level
-        ) FILTER (WHERE qse.id IS NOT NULL) as score_examples
+        (
+          SELECT json_agg(
+            jsonb_build_object(
+              'value', qao2.score_value,
+              'label', qao2.option_text
+            ) ORDER BY qao2.option_order
+          )
+          FROM question_answer_options qao2
+          WHERE qao2.question_template_id = qt.id
+            AND qao2.is_example = FALSE
+        ) as options,
+        (
+          SELECT json_agg(
+            jsonb_build_object(
+              'score_level', qse2.score_level,
+              'reason_text', qse2.reason_text,
+              'report_action', qse2.report_action
+            ) ORDER BY qse2.score_level
+          )
+          FROM question_score_examples qse2
+          WHERE qse2.question_template_id = qt.id
+        ) as score_examples
       FROM question_templates qt
-      LEFT JOIN question_answer_options qao ON qt.id = qao.question_template_id
-      LEFT JOIN question_score_examples qse ON qt.id = qse.question_template_id
       WHERE qt.is_active = TRUE
         AND qt.applicable_tiers @> ${JSON.stringify([tier])}::jsonb
       GROUP BY qt.id
