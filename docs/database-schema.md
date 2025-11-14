@@ -342,6 +342,8 @@ users (1) ──────< (N) audits
 4. **Remove CSV Columns** (`db/migrate-remove-csv-fallback-columns.ts`)
    - Removed CSV fallback columns: `red_score_example`, `orange_score_example`, `report_action`
    - All data now comes from `question_score_examples` table
+   - Each question has 3 score_examples (one per level: low, medium, high)
+   - Each score_example has `reason_text` (required) and `report_action` (optional) for all 3 levels
 
 5. **Constraints** (`db/add-constraints.ts`)
    - Added unique constraints on `question_answer_options`
