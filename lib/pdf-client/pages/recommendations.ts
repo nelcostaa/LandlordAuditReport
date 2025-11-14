@@ -83,25 +83,14 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
     // Prepare table body with 5 columns: Status, Subcategory, Question, Reason for Low Score, Recommended Actions
     const tableBody = category.questions.map(question => {
       const reasonText = getReasonForLowScore(question);
-      const recommendedAction = getRecommendedAction(question);
-      
-      // Debug logging (can remove later)
-      if (!reasonText || !recommendedAction) {
-        console.log(`[PDF Recommendations] Missing data for Q${question.number}:`, {
-          hasScoreExamples: !!question.score_examples,
-          scoreExamplesLength: question.score_examples?.length || 0,
-          score: question.score,
-          reasonText,
-          recommendedAction,
-        });
-      }
+      const recommendedAction = getRecommendedAction(question, data);
       
       return [
         '', // Status column - will be drawn with traffic light
         question.subcategory || '',
         question.questionText || '',
-        reasonText || 'No reason provided',
-        recommendedAction || 'No action recommended',
+        reasonText,
+        recommendedAction,
       ];
     });
     
@@ -168,37 +157,44 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
 
 /**
  * Get reason for low score from question's score_examples
+ * Multiple fallbacks: score_examples > CSV data > generic
  */
 function getReasonForLowScore(question: QuestionResponseData): string {
-  if (!question.score_examples || question.score_examples.length === 0) {
-    return '';
+  // Priority 1: Use score_examples (Scoring Guidance from Edit Questions)
+  if (question.score_examples && question.score_examples.length > 0) {
+    // Map answer score to score_level
+    // score 1 = 'low', score 5 = 'medium', score 10 = 'high'
+    let scoreLevel: 'low' | 'medium' | 'high';
+    if (question.score === 1) {
+      scoreLevel = 'low';
+    } else if (question.score === 5) {
+      scoreLevel = 'medium';
+    } else {
+      scoreLevel = 'high';
+    }
+    
+    // Find the matching score_example
+    const matchingExample = question.score_examples.find(
+      ex => ex.score_level === scoreLevel
+    );
+    
+    if (matchingExample && matchingExample.reason_text) {
+      return matchingExample.reason_text.trim();
+    }
   }
   
-  // Map answer score to score_level
-  // score 1 = 'low', score 5 = 'medium', score 10 = 'high'
-  let scoreLevel: 'low' | 'medium' | 'high';
-  if (question.score === 1) {
-    scoreLevel = 'low';
-  } else if (question.score === 5) {
-    scoreLevel = 'medium';
-  } else {
-    scoreLevel = 'high';
-  }
-  
-  // Find the matching score_example
-  const matchingExample = question.score_examples.find(
-    ex => ex.score_level === scoreLevel
-  );
-  
-  if (matchingExample && matchingExample.reason_text) {
-    return matchingExample.reason_text.trim();
-  }
-  
-  // Fallback to CSV data
+  // Fallback 1: Use CSV data (red_score_example, orange_score_example)
   if (question.color === 'red' && question.red_score_example) {
-    return question.red_score_example;
+    return question.red_score_example.trim();
   } else if (question.color === 'orange' && question.orange_score_example) {
-    return question.orange_score_example;
+    return question.orange_score_example.trim();
+  }
+  
+  // Fallback 2: Generic reason based on score/color
+  if (question.color === 'red') {
+    return `Statutory requirement issue identified in ${question.subcategory || question.category}.`;
+  } else if (question.color === 'orange') {
+    return `Improvement needed in ${question.subcategory || question.category}.`;
   }
   
   return '';
@@ -206,9 +202,10 @@ function getReasonForLowScore(question: QuestionResponseData): string {
 
 /**
  * Get recommended action from question's score_examples or report_action
+ * Multiple fallbacks: score_examples > CSV report_action > suggestedServices > generic
  */
-function getRecommendedAction(question: QuestionResponseData): string {
-  // First priority: Use report_action from score_examples
+function getRecommendedAction(question: QuestionResponseData, data?: ReportData): string {
+  // Priority 1: Use report_action from score_examples (Scoring Guidance from Edit Questions)
   if (question.score_examples && question.score_examples.length > 0) {
     // Map answer score to score_level
     let scoreLevel: 'low' | 'medium' | 'high';
@@ -229,9 +226,26 @@ function getRecommendedAction(question: QuestionResponseData): string {
     }
   }
   
-  // Fallback: Use direct report_action from CSV
+  // Fallback 1: Use direct report_action from CSV
   if (question.report_action) {
     return question.report_action.trim();
+  }
+  
+  // Fallback 2: Check suggested services (if data available)
+  if (data && data.suggestedServices) {
+    const service = data.suggestedServices.find(
+      s => s.lowScoringArea.toLowerCase().includes((question.subcategory || question.category).toLowerCase())
+    );
+    if (service && service.suggestedService) {
+      return service.suggestedService;
+    }
+  }
+  
+  // Fallback 3: Generic action based on score/color
+  if (question.color === 'red') {
+    return `Immediately address this statutory requirement issue. Professional legal consultation is strongly recommended to avoid prosecution and financial penalties.`;
+  } else if (question.color === 'orange') {
+    return `Take action to improve compliance in this area. Consider implementing best practices to reduce risk.`;
   }
   
   return '';
