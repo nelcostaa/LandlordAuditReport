@@ -11,6 +11,7 @@ const createQuestionSchema = z.object({
   applicable_tiers: z.array(z.enum(["tier_0", "tier_1", "tier_2", "tier_3", "tier_4"])).min(1),
   weight: z.number().min(0.5).max(2.0),
   is_critical: z.boolean(),
+  comment: z.string().optional(),
   motivation_learning_point: z.string().optional(),
   answer_options: z.array(
     z.object({
@@ -206,6 +207,7 @@ export async function POST(request: Request) {
         applicable_tiers,
         weight,
         is_critical,
+        comment,
         motivation_learning_point,
         created_by_auditor_id
       ) VALUES (
@@ -217,6 +219,7 @@ export async function POST(request: Request) {
         ${JSON.stringify(data.applicable_tiers)},
         ${data.weight},
         ${data.is_critical},
+        ${data.comment || null},
         ${data.motivation_learning_point || null},
         ${session.user.id}
       )

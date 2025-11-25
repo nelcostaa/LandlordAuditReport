@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS question_templates (
   applicable_tiers JSONB NOT NULL DEFAULT '[]',
   weight DECIMAL(3, 1) NOT NULL CHECK (weight >= 0.5 AND weight <= 2.0),
   is_critical BOOLEAN DEFAULT FALSE,
+  comment TEXT,
   motivation_learning_point TEXT,
   -- CSV fallback columns removed: red_score_example, orange_score_example, report_action
   -- Now using question_score_examples table with reason_text and report_action per score level

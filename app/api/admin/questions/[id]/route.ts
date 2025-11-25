@@ -11,6 +11,7 @@ const updateQuestionSchema = z.object({
   applicable_tiers: z.array(z.string()).optional(),
   weight: z.number().min(0.5).max(2.0).optional(),
   is_critical: z.boolean().optional(),
+  comment: z.string().optional(),
   motivation_learning_point: z.string().optional(),
   is_active: z.boolean().optional(),
   answer_options: z.array(
@@ -153,6 +154,10 @@ export async function PATCH(
     if (data.is_critical !== undefined) {
       updates.push(`is_critical = $${paramCount++}`);
       values.push(data.is_critical);
+    }
+    if (data.comment !== undefined) {
+      updates.push(`comment = $${paramCount++}`);
+      values.push(data.comment);
     }
     if (data.motivation_learning_point !== undefined) {
       updates.push(`motivation_learning_point = $${paramCount++}`);

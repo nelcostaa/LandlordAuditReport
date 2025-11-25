@@ -21,6 +21,22 @@ A professional landlord compliance auditing and reporting system built with Next
 - **Forms**: React Hook Form + Zod
 - **Deployment**: Vercel
 
+## Deployment
+
+### Quick Deployment Guide
+
+For deploying new features to Vercel (including database migrations):
+
+- **Quick Start**: See [QUICK-START-DEPLOYMENT.md](./QUICK-START-DEPLOYMENT.md) - 10 minute guide
+- **Detailed Guide**: See [DEPLOYMENT-GUIDE-COMMENT-FIELD.md](./DEPLOYMENT-GUIDE-COMMENT-FIELD.md) - Full instructions with troubleshooting
+
+### Latest Feature Deployment
+
+**Comment Field in Question Forms** (November 2025)
+- Added Comment field for client guidance in questionnaires
+- Migration required: `ALTER TABLE question_templates ADD COLUMN comment TEXT`
+- See deployment guides above for step-by-step instructions
+
 ## Getting Started
 
 ### Prerequisites

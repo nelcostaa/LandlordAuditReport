@@ -22,6 +22,7 @@ const questionFormSchema = z.object({
   applicable_tiers: z.array(z.string()).min(1, "Select at least one tier"),
   weight: z.number().min(0.5).max(2.0),
   is_critical: z.boolean(),
+  comment: z.string().optional(),
   motivation_learning_point: z.string().optional(),
   answer_options: z.array(
     z.object({
@@ -273,6 +274,29 @@ export default function NewQuestionPage() {
                   {errors.question_text.message}
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="comment" className="flex items-center gap-2">
+                Comment
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-gray-600"
+                  title="Used by the client to make a comment when answering the questionaire. You can enter here any helpful information to guide the client."
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              </Label>
+              <Textarea
+                id="comment"
+                {...register("comment")}
+                placeholder="Enter helpful information to guide the client..."
+                rows={3}
+                className="resize-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <p className="text-xs text-gray-500">
+                Used by the client to make a comment when answering the questionaire. You can enter here any helpful information to guide the client.
+              </p>
             </div>
 
             <div className="space-y-2">
