@@ -123,13 +123,12 @@ export default function ReportPreviewPage() {
         
         console.log('[PDF] Transforming audit data to report format...');
         
-        // Transform to ReportData format (include notes for comments)
+        // Transform to ReportData format (comments are now in form_responses)
         const reportData = transformAuditToReportData(
           auditData.audit,
           auditData.responses,
           auditData.questions,
-          auditData.scores,
-          auditData.notes
+          auditData.scores
         );
         
         console.log('[PDF] Generating complete PDF...');

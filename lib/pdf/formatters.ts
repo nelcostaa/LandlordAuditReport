@@ -1,5 +1,5 @@
 // PDF Report Data Formatters
-import { Audit, FormResponse, Note } from '@/types/database';
+import { Audit, FormResponse } from '@/types/database';
 import { Question } from '@/lib/questions';
 import { CategoryScore, OverallScore, RecommendedAction } from '@/lib/scoring';
 import { getTrafficLightColor } from './styles';
@@ -96,8 +96,7 @@ export function transformAuditToReportData(
     categoryScores: CategoryScore[];
     overallScore: OverallScore;
     recommendedActions: RecommendedAction[];
-   },
-  notes?: Note[]
+  }
 ): ReportData {
   // 1. Calculate subcategory scores
   const subcategoryScores = calculateSubcategoryScores(responses, questions);
@@ -110,7 +109,8 @@ export function transformAuditToReportData(
   );
   
   // 3. Sort question responses by score (red, orange, green)
-  const questionResponses = sortQuestionResponses(responses, questions, notes);
+  // Comments are now part of form_responses, not from notes table
+  const questionResponses = sortQuestionResponses(responses, questions);
   
   // 4. Suggest follow-on services for low-scoring areas
   const suggestedServices = generateServiceRecommendations(subcategoryScores);
@@ -300,8 +300,7 @@ function generateRecommendationsByCategory(
  */
 function sortQuestionResponses(
   responses: FormResponse[],
-  questions: Question[],
-  notes?: Note[]
+  questions: Question[]
 ): {
   red: QuestionResponseData[];
   orange: QuestionResponseData[];
@@ -317,20 +316,6 @@ function sortQuestionResponses(
     green: [],
   };
   
-  // Create a map of notes by question_id for quick lookup
-  const notesMap = new Map<string, string>();
-  if (notes && notes.length > 0) {
-    notes.forEach(note => {
-      // If there are multiple notes for the same question, concatenate them
-      const existingNote = notesMap.get(note.question_id);
-      if (existingNote) {
-        notesMap.set(note.question_id, `${existingNote}\n${note.content}`);
-      } else {
-        notesMap.set(note.question_id, note.content);
-      }
-    });
-  }
-  
   responses.forEach(response => {
     const question = questions.find(q => q.id === response.question_id);
     if (!question) {
@@ -344,8 +329,8 @@ function sortQuestionResponses(
       return;
     }
     
-    // Get comment for this question
-    const comment = notesMap.get(question.id);
+    // Get comment directly from the form response
+    const comment = response.comment || undefined;
     
     const option = question.options.find(opt => opt.value === response.answer_value);
     if (!option) {

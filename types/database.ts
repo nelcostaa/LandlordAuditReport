@@ -32,6 +32,7 @@ export interface FormResponse {
   audit_id: number;
   question_id: string;
   answer_value: AnswerValue;
+  comment?: string; // Optional comment from landlord when answering
   created_at: Date;
 }
 

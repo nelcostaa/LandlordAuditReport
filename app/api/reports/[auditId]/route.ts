@@ -61,9 +61,10 @@ export async function GET(
     // 3. SKIP CACHE TEMPORARILY FOR DEBUGGING
     console.log(`[PDF] Cache disabled for debugging - generating fresh PDF...`);
     
-    // 4. Fetch form responses
+    // 4. Fetch form responses (including comments)
     const responsesResult = await sql`
-      SELECT * FROM form_responses
+      SELECT id, audit_id, question_id, answer_value, comment, created_at
+      FROM form_responses
       WHERE audit_id = ${auditId}
       ORDER BY question_id
     `;
@@ -78,13 +79,6 @@ export async function GET(
       );
     }
     
-    // 4.1 Fetch notes/comments for the audit
-    const notesResult = await sql`
-      SELECT * FROM notes
-      WHERE audit_id = ${auditId}
-      ORDER BY question_id
-    `;
-    const notes = notesResult.rows as any[];
     
     // 5. Fetch questions for this tier
     console.log(`[PDF] Step 5: Fetching questions for tier ${audit.risk_audit_tier}...`);
@@ -125,9 +119,9 @@ export async function GET(
       const scores = calculateAuditScores(responses, questions);
       console.log(`[PDF] ✓ Calculated scores: Overall ${scores.overallScore.score}, Risk Level: ${scores.overallScore.riskLevel}`);
     
-      // 7. Transform data to report format (include notes for comments)
+      // 7. Transform data to report format (comments are now in form_responses)
       console.log(`[PDF] Step 7: Transforming audit data to report format...`);
-      const reportData = transformAuditToReportData(audit, responses, questions, scores, notes);
+      const reportData = transformAuditToReportData(audit, responses, questions, scores);
       console.log(`[PDF] ✓ Transformed data:`);
       console.log(`[PDF]   - Red questions: ${reportData.questionResponses.red.length}`);
       console.log(`[PDF]   - Orange questions: ${reportData.questionResponses.orange.length}`);

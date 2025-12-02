@@ -129,6 +129,7 @@ function AuditFormContent({
   const [currentCategory, setCurrentCategory] = useState(0);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
+  const [questionComments, setQuestionComments] = useState<Record<string, string>>({});
   const [showSavedToast, setShowSavedToast] = useState(false);
   const lastSavedRef = useRef<number>(0);
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -178,9 +179,19 @@ function AuditFormContent({
         const validQuestionIds = relevantQuestions.map(q => q.id);
         const validData: Partial<ActualFormData> = {};
         const restoredAnswers: Record<string, number> = {};
+        const restoredComments: Record<string, string> = {};
         
         // Build clean data object with ONLY valid keys
         Object.entries(parsed).forEach(([key, value]) => {
+          // Handle comments (stored as comment_1_1 format)
+          if (key.startsWith('comment_')) {
+            const questionId = key.replace('comment_', '').replace(/_/g, '.');
+            if (validQuestionIds.includes(questionId) && typeof value === 'string') {
+              restoredComments[questionId] = value;
+            }
+            return;
+          }
+          
           // Normalize key: handle "1.1", "q_1.1", or "q_1_1" formats
           let cleanKey = key;
           if (key.startsWith('q_')) {
@@ -202,6 +213,11 @@ function AuditFormContent({
           reset(defaultValues as any, { keepDirty: false });
           setSelectedAnswers(restoredAnswers);
         }
+        
+        // Restore comments
+        if (Object.keys(restoredComments).length > 0) {
+          setQuestionComments(restoredComments);
+        }
       } catch (error) {
         console.error("Failed to restore form data:", error);
         localStorage.removeItem(storageKey);
@@ -209,27 +225,48 @@ function AuditFormContent({
     }
   }, [audit.token, relevantQuestions, reset]);
 
-  // Auto-save form data to localStorage with toast notification
-  useEffect(() => {
+  // Helper function to save all form data to localStorage
+  const saveToLocalStorage = (formValues: Record<string, any>, comments: Record<string, string>) => {
     const storageKey = `audit-form-${audit.token}`;
-    const subscription = watch((value) => {
-      // Save only answered questions (clean data)
-      const cleanData = Object.fromEntries(
-        Object.entries(value).filter(([_, v]) => v === 1 || v === 5 || v === 10)
-      );
-      localStorage.setItem(storageKey, JSON.stringify(cleanData));
-      
-      // Show "Saved" toast with debounce (only show once every 1.5s)
-      const now = Date.now();
-      if (now - lastSavedRef.current > 1500) {
-        setShowSavedToast(true);
-        lastSavedRef.current = now;
-        setTimeout(() => setShowSavedToast(false), 2000);
+    
+    // Save only answered questions (clean data)
+    const cleanData: Record<string, any> = Object.fromEntries(
+      Object.entries(formValues).filter(([_, v]) => v === 1 || v === 5 || v === 10)
+    );
+    
+    // Also save comments (stored as comment_1_1 format)
+    Object.entries(comments).forEach(([questionId, comment]) => {
+      if (comment && comment.trim()) {
+        const safeKey = `comment_${questionId.replace(/\./g, '_')}`;
+        cleanData[safeKey] = comment;
       }
     });
     
+    localStorage.setItem(storageKey, JSON.stringify(cleanData));
+    
+    // Show "Saved" toast with debounce (only show once every 1.5s)
+    const now = Date.now();
+    if (now - lastSavedRef.current > 1500) {
+      setShowSavedToast(true);
+      lastSavedRef.current = now;
+      setTimeout(() => setShowSavedToast(false), 2000);
+    }
+  };
+
+  // Auto-save form data to localStorage with toast notification
+  useEffect(() => {
+    const subscription = watch((value) => {
+      saveToLocalStorage(value, questionComments);
+    });
+    
     return () => subscription.unsubscribe();
-  }, [audit.token, watch]);
+  }, [audit.token, watch, questionComments]);
+  
+  // Also save when comments change
+  useEffect(() => {
+    const currentValues = watch();
+    saveToLocalStorage(currentValues, questionComments);
+  }, [questionComments]);
 
   // Calculate progress
   const allValues = watch();
@@ -452,10 +489,14 @@ function AuditFormContent({
       // Convert safe keys back to original question IDs for API
       const responses = Object.entries(data)
         .filter(([key, value]) => key.startsWith('q_') && (value === 1 || value === 5 || value === 10))
-        .map(([safeKey, answer_value]) => ({
-          question_id: safeKey.replace('q_', '').replace(/_/g, '.'), // q_1_1 → 1.1
-          answer_value: answer_value as 1 | 5 | 10,
-        }));
+        .map(([safeKey, answer_value]) => {
+          const question_id = safeKey.replace('q_', '').replace(/_/g, '.'); // q_1_1 → 1.1
+          return {
+            question_id,
+            answer_value: answer_value as 1 | 5 | 10,
+            comment: questionComments[question_id] || null, // Include comment if any
+          };
+        });
 
       const response = await fetch(`/api/audits/${token}/submit`, {
         method: "POST",
@@ -786,6 +827,29 @@ function AuditFormContent({
                         {errors[`q_${question.id.replace(/\./g, '_')}` as keyof typeof errors]?.message as string}
                       </p>
                     )}
+                    
+                    {/* Comment textarea */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <label 
+                        htmlFor={`comment-${question.id}`}
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Add a comment (optional)
+                      </label>
+                      <textarea
+                        id={`comment-${question.id}`}
+                        placeholder="Add any additional notes or context for this question..."
+                        value={questionComments[question.id] || ''}
+                        onChange={(e) => {
+                          setQuestionComments((prev) => ({
+                            ...prev,
+                            [question.id]: e.target.value,
+                          }));
+                        }}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                        rows={2}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               );

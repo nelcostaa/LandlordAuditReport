@@ -7,6 +7,7 @@ const submitSchema = z.object({
     z.object({
       question_id: z.string(),
       answer_value: z.union([z.literal(1), z.literal(5), z.literal(10)]),
+      comment: z.string().nullable().optional(), // Optional comment from landlord
     })
   ).min(1, "At least one response is required"),
 });
@@ -118,13 +119,14 @@ export async function POST(
     console.log('✅ All submitted questions validated successfully');
     console.log(`   Accepting ${submittedQuestionIds.length} responses (allows questionnaire evolution)\n`);
 
-    // Insert all form responses
+    // Insert all form responses (with optional comments)
     for (const response of responses) {
+      const comment = response.comment || null;
       await sql`
-        INSERT INTO form_responses (audit_id, question_id, answer_value, created_at)
-        VALUES (${audit.id}, ${response.question_id}, ${response.answer_value}, NOW())
+        INSERT INTO form_responses (audit_id, question_id, answer_value, comment, created_at)
+        VALUES (${audit.id}, ${response.question_id}, ${response.answer_value}, ${comment}, NOW())
         ON CONFLICT (audit_id, question_id)
-        DO UPDATE SET answer_value = ${response.answer_value}
+        DO UPDATE SET answer_value = ${response.answer_value}, comment = ${comment}
       `;
     }
 

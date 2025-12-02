@@ -34,9 +34,10 @@ export async function GET(
 
     const audit = auditResult.rows[0];
 
-    // Get form responses
+    // Get form responses (including comments)
     const responsesResult = await sql`
-      SELECT * FROM form_responses
+      SELECT id, audit_id, question_id, answer_value, comment, created_at
+      FROM form_responses
       WHERE audit_id = ${auditId}
       ORDER BY question_id
     `;
