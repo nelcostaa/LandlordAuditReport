@@ -46,40 +46,40 @@ interface DetailedResultsPageProps {
   greenQuestions: QuestionResponse[];
 }
 
-export const DetailedResultsPage = ({ 
-  redQuestions, 
-  orangeQuestions, 
+export const DetailedResultsPage = ({
+  redQuestions,
+  orangeQuestions,
   greenQuestions
 }: DetailedResultsPageProps) => {
   // Combine all questions into a single array
   const allQuestions = [...redQuestions, ...orangeQuestions, ...greenQuestions];
-  
+
   return (
-  <Page size="A4" style={styles.page}>
-    <PageHeader title="Landlord Risk Audit Report" />
-    
-    <Text style={globalStyles.h1}>Detailed Results</Text>
-    
-    <View style={styles.section}>
-      <Text style={globalStyles.paragraph}>
-        This section provides a comprehensive breakdown of all audit questions. 
-        Each question includes the selected answer and any additional comments provided.
-      </Text>
-    </View>
-    
-    {/* Table Header */}
-    <View style={styles.tableHeader}>
-      <Text style={[styles.headerCell, styles.questionHeaderCell]}>Question</Text>
-      <Text style={[styles.headerCell, styles.answerHeaderCell]}>Answer</Text>
-      <Text style={[styles.headerCell, styles.commentHeaderCell]}>Comment</Text>
-    </View>
-    
-    {/* All Questions in Table Format */}
-    {allQuestions.map((question, idx) => (
-      <QuestionCard key={`question-${question.number}-${idx}`} question={question} />
-    ))}
-    
-    <PageFooter />
-  </Page>
+    <Page size="A4" style={styles.page}>
+      <PageHeader title="Landlord Risk Audit Report" />
+
+      <Text style={globalStyles.h1}>Detailed Results</Text>
+
+      <View style={styles.section}>
+        <Text style={globalStyles.paragraph}>
+          This section provides a comprehensive breakdown of all audit questions.
+          Each question includes the selected answer and any additional comments provided.
+        </Text>
+      </View>
+
+      {/* Table Header */}
+      <View style={styles.tableHeader}>
+        <Text style={[styles.headerCell, styles.questionHeaderCell]}>Question</Text>
+        <Text style={[styles.headerCell, styles.answerHeaderCell]}>Answer</Text>
+        <Text style={[styles.headerCell, styles.commentHeaderCell]}>Comment</Text>
+      </View>
+
+      {/* All Questions in Table Format */}
+      {allQuestions.map((question, idx) => (
+        <QuestionCard key={`question-${question.number}-${idx}`} question={question} />
+      ))}
+
+      <PageFooter />
+    </Page>
   );
 };
