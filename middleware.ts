@@ -13,7 +13,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Only run middleware on dashboard routes that need protection
-  matcher: ["/dashboard/:path*"],
+  // Run middleware on dashboard and API routes that need protection
+  matcher: ["/dashboard/:path*", "/api/:path*"],
 };
 
