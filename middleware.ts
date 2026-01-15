@@ -13,6 +13,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Run middleware on dashboard and API routes that need protection
+  matcher: ["/dashboard/:path*", "/api/:path*"],
 };
 
