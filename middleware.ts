@@ -5,6 +5,12 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
 
+  // Allow Stripe webhook and checkout endpoints without auth
+  const isStripeEndpoint = req.nextUrl.pathname.startsWith("/api/stripe");
+  if (isStripeEndpoint) {
+    return NextResponse.next();
+  }
+
   if (isOnDashboard && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
