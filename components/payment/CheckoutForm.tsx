@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Loader2 } from "lucide-react";
 
@@ -52,9 +56,13 @@ export function CheckoutForm({ price }: { price: number }) {
         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 h-12 text-lg"
       >
         {isLoading ? (
-          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
+          </>
         ) : (
-          <><CreditCard className="w-4 h-4 mr-2" /> Pay £{price}</>
+          <>
+            <CreditCard className="w-4 h-4 mr-2" /> Pay £{price}
+          </>
         )}
       </Button>
     </form>

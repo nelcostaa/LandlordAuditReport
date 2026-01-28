@@ -1,8 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, CreditCard, User, FileText, Loader2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CreditCard,
+  User,
+  FileText,
+  Loader2,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +27,9 @@ import { Elements } from "@stripe/react-stripe-js";
 import { CheckoutForm } from "./CheckoutForm"; // Import the file we created above
 
 // Initialize Stripe outside the component for performance
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+);
 
 interface Service {
   id: string;
@@ -67,7 +83,7 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
             serviceId: service.id,
             email: formData.email,
             name: formData.name,
-            address: formData.propertyAddress
+            address: formData.propertyAddress,
           }),
         });
 
@@ -112,12 +128,26 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
               return (
                 <div key={step.id} className="flex items-center">
                   <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isCompleted ? "bg-green-600 text-white" : isActive ? "bg-primary text-primary-foreground ring-4 ring-primary/20" : "bg-muted text-muted-foreground"}`}>
-                      {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${isCompleted ? "bg-green-600 text-white" : isActive ? "bg-primary text-primary-foreground ring-4 ring-primary/20" : "bg-muted text-muted-foreground"}`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
                     </div>
-                    <span className={`text-xs mt-1 font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}>{step.title}</span>
+                    <span
+                      className={`text-xs mt-1 font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}
+                    >
+                      {step.title}
+                    </span>
                   </div>
-                  {index < STEPS.length - 1 && <div className={`w-16 h-0.5 mx-2 transition-colors duration-300 ${isCompleted ? "bg-green-600" : "bg-muted"}`} />}
+                  {index < STEPS.length - 1 && (
+                    <div
+                      className={`w-16 h-0.5 mx-2 transition-colors duration-300 ${isCompleted ? "bg-green-600" : "bg-muted"}`}
+                    />
+                  )}
                 </div>
               );
             })}
@@ -131,11 +161,15 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
             <div className="space-y-6">
               <DialogHeader>
                 <DialogTitle>Confirm Your Selection</DialogTitle>
-                <DialogDescription>Review your chosen audit package.</DialogDescription>
+                <DialogDescription>
+                  Review your chosen audit package.
+                </DialogDescription>
               </DialogHeader>
               <div className="bg-muted/50 rounded-xl p-6">
                 <h3 className="font-semibold text-lg">{service.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{service.description}</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {service.description}
+                </p>
                 <span className="text-3xl font-bold">£{service.price}</span>
               </div>
             </div>
@@ -146,20 +180,37 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
             <div className="space-y-6">
               <DialogHeader>
                 <DialogTitle>Your Details</DialogTitle>
-                <DialogDescription>We&apos;ll use this for the receipt.</DialogDescription>
+                <DialogDescription>
+                  We&apos;ll use this for the receipt.
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" />
+                  <Input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input name="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" />
+                  <Input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="john@example.com"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Address</Label>
-                  <Input name="propertyAddress" value={formData.propertyAddress} onChange={handleInputChange} placeholder="123 Street" />
+                  <Label>Property Address</Label>
+                  <Input
+                    name="propertyAddress"
+                    value={formData.propertyAddress}
+                    onChange={handleInputChange}
+                    placeholder="123 Street"
+                  />
                 </div>
               </div>
             </div>
@@ -174,7 +225,10 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
               </DialogHeader>
 
               {/* The Provider wraps ONLY the form */}
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+              <Elements
+                stripe={stripePromise}
+                options={{ clientSecret, appearance: { theme: "stripe" } }}
+              >
                 <CheckoutForm price={service.price} />
               </Elements>
             </div>
@@ -185,14 +239,22 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
         {/* We only show the Footer in steps 1 and 2. In step 3, the pay button is INSIDE CheckoutForm */}
         {currentStep < 3 && (
           <div className="px-6 py-4 border-t bg-muted/30 flex justify-between">
-            <Button variant="ghost" onClick={handleBack} disabled={currentStep === 1}>
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={currentStep === 1}
+            >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
             <Button onClick={handleNext} disabled={isLoadingSecret}>
               {isLoadingSecret ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Preparing...</>
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Preparing...
+                </>
               ) : (
-                <>Continue <ArrowRight className="w-4 h-4 ml-2" /></>
+                <>
+                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                </>
               )}
             </Button>
           </div>
