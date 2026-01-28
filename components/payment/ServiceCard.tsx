@@ -49,7 +49,7 @@ export function ServiceCard({
             {/* Price */}
             <div className="text-center mb-8">
                 <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-lg text-muted-foreground">$</span>
+                    <span className="text-lg text-muted-foreground">£</span>
                     <span
                         className={`text-5xl font-extrabold tracking-tight ${isPopular
                             ? "bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
