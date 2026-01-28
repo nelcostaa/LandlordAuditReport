@@ -5,7 +5,13 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Check, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
@@ -66,8 +72,13 @@ function PaymentSuccessContent() {
             </p>
             <ul className="mt-2 space-y-2 text-muted-foreground">
               <li>• You&apos;ll receive a confirmation email shortly</li>
-              <li>• The email will contain a link to complete your audit questionnaire</li>
-              <li>• Complete the questionnaire to receive your detailed report</li>
+              <li>
+                • The email will contain a link to complete your audit
+                questionnaire
+              </li>
+              <li>
+                • Complete the questionnaire to receive your detailed report
+              </li>
             </ul>
           </div>
           <div className="flex flex-col gap-2">

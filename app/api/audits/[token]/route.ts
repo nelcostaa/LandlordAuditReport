@@ -4,7 +4,7 @@ import { sql } from "@vercel/postgres";
 // Get audit by token (public route - but only for paid audits)
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ token: string }> }
+  { params }: { params: Promise<{ token: string }> },
 ) {
   try {
     const { token } = await params;
@@ -27,10 +27,7 @@ export async function GET(
     `;
 
     if (result.rows.length === 0) {
-      return NextResponse.json(
-        { error: "Audit not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Audit not found" }, { status: 404 });
     }
 
     const audit = result.rows[0];
@@ -39,18 +36,18 @@ export async function GET(
     if (audit.payment_status && audit.payment_status !== "paid") {
       return NextResponse.json(
         { error: "Payment not confirmed for this audit" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     // Don't allow access if already submitted
     if (audit.status !== "pending") {
       return NextResponse.json(
-        { 
+        {
           error: "This audit has already been submitted",
-          status: audit.status
+          status: audit.status,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,8 +56,7 @@ export async function GET(
     console.error("Get audit by token error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
