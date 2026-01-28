@@ -10,10 +10,12 @@ export interface User {
 
 export type AuditStatus = 'pending' | 'submitted' | 'completed';
 export type RiskAuditTier = 'tier_0' | 'tier_1' | 'tier_2' | 'tier_3' | 'tier_4';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type ServiceType = 'online' | 'onsite';
 
 export interface Audit {
   id: number;
-  auditor_id: number;
+  auditor_id: number | null; // Nullable for self-service audits
   token: string;
   status: AuditStatus;
   client_name: string;
@@ -23,6 +25,11 @@ export interface Audit {
   conducted_by: string;
   created_at: Date;
   submitted_at: Date | null;
+  // Payment tracking fields
+  payment_intent_id?: string | null;
+  payment_status?: PaymentStatus | null;
+  payment_amount?: number | null; // Amount in pence/cents
+  service_type?: ServiceType | null;
 }
 
 export type AnswerValue = 1 | 5 | 10;
