@@ -29,9 +29,11 @@ function PaymentSuccessContent() {
   const [isPolling, setIsPolling] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const [auditToken, setAuditToken] = useState<string | null>(null);
+  const [hasNetworkError, setHasNetworkError] = useState(false);
   
   // Use ref for poll count to avoid useEffect re-runs (fixes memory leak)
   const pollCountRef = useRef(0);
+  const errorCountRef = useRef(0);
   // State to trigger restart when "Try Again" is clicked
   const [restartTrigger, setRestartTrigger] = useState(0);
 
@@ -56,14 +58,20 @@ function PaymentSuccessContent() {
 
     // Reset state for this polling session
     pollCountRef.current = 0;
+    errorCountRef.current = 0;
     setIsPolling(true);
     setTimedOut(false);
     setAuditToken(null);
+    setHasNetworkError(false);
 
     const pollForAudit = async (): Promise<boolean> => {
       try {
         const response = await fetch(`/api/audits/by-payment/${paymentIntent}`);
         const data: AuditLookupResponse = await response.json();
+
+        // Reset error count on successful response
+        errorCountRef.current = 0;
+        setHasNetworkError(false);
 
         if (data.found && data.token) {
           setAuditToken(data.token);
@@ -74,6 +82,11 @@ function PaymentSuccessContent() {
         return false; // Continue polling
       } catch (error) {
         console.error("Error polling for audit:", error);
+        errorCountRef.current += 1;
+        // Mark as network error if we have 3+ consecutive failures
+        if (errorCountRef.current >= 3) {
+          setHasNetworkError(true);
+        }
         return false; // Continue polling on error
       }
     };
@@ -177,14 +190,25 @@ function PaymentSuccessContent() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
-              <p className="text-amber-800 font-medium">
-                Your questionnaire is taking a moment to prepare.
-              </p>
-              <p className="text-amber-700 mt-2">
-                You&apos;ll receive a confirmation email shortly with a link to complete your audit questionnaire.
-              </p>
-            </div>
+            {hasNetworkError ? (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm">
+                <p className="text-red-800 font-medium">
+                  Connection issue detected.
+                </p>
+                <p className="text-red-700 mt-2">
+                  We&apos;re having trouble connecting to our servers. Please check your internet connection and try again.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm">
+                <p className="text-amber-800 font-medium">
+                  Your questionnaire is taking a moment to prepare.
+                </p>
+                <p className="text-amber-700 mt-2">
+                  You&apos;ll receive a confirmation email shortly with a link to complete your audit questionnaire.
+                </p>
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <Button 
                 onClick={() => {
