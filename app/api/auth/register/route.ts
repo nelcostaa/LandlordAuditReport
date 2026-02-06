@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { registrationLimiter, getClientIP } from "@/lib/rate-limiter";
 
 // =============================================================================
 // POST /api/auth/register
 // =============================================================================
 // Creates a new auditor account. REQUIRES valid invite code.
 // Set REGISTRATION_INVITE_CODE in environment variables.
+// Rate limited: 5 attempts per 15 minutes per IP.
 // =============================================================================
 
 const registerSchema = z.object({
@@ -19,6 +21,20 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = registrationLimiter.check(clientIP);
+    
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Too many registration attempts. Please try again later." },
+        { 
+          status: 429,
+          headers: registrationLimiter.getHeaders(rateLimitResult),
+        }
+      );
+    }
+
     const body = await request.json();
     const { name, email, password, inviteCode } = registerSchema.parse(body);
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { checkoutLimiter, getClientIP } from "@/lib/rate-limiter";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-02-24.acacia"
@@ -13,6 +14,20 @@ const SERVICE_PRICES: Record<string, { amount: number; name: string }> = {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(req);
+    const rateLimitResult = checkoutLimiter.check(clientIP);
+    
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Too many checkout attempts. Please try again later." },
+        { 
+          status: 429,
+          headers: checkoutLimiter.getHeaders(rateLimitResult),
+        }
+      );
+    }
+
     const body = await req.json();
     const serviceId = body.serviceId || body.serviceID;
     const email = body.email;
