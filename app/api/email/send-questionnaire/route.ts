@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import { z } from 'zod';
 import { sendQuestionnaireEmail } from '@/lib/email';
+import { auth } from '@/lib/auth';
 
 // =============================================================================
 // POST /api/email/send-questionnaire
 // =============================================================================
 // Sends the questionnaire link email to the landlord.
+// REQUIRES AUTHENTICATION - only logged-in auditors can trigger emails.
 //
 // Request body:
 //   { auditToken: string } - The unique token for the audit
@@ -14,6 +16,7 @@ import { sendQuestionnaireEmail } from '@/lib/email';
 // Returns:
 //   200: { success: true, message: string }
 //   400: { error: string } - Validation error
+//   401: { error: string } - Unauthorized
 //   404: { error: string } - Audit not found
 //   500: { error: string } - Server/email error
 // =============================================================================
@@ -24,6 +27,12 @@ const requestSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // SECURITY: Require authentication to prevent email spam abuse
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Parse and validate request body
     const body = await req.json();
     const { auditToken } = requestSchema.parse(body);
