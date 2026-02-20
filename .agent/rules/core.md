@@ -195,6 +195,20 @@ You're smart enough to know when something is truly ready vs just "technically w
 
 ---
 
+## Debugging & Environment Resilience
+
+**Bypass Environment Hell:** When a local environment is critically broken (e.g., corrupted `node_modules` with `EPERM` errors) preventing standard execution, do not get blocked. Pivot immediately to using standalone zero-dependency scripts (like pure Python) and direct HTTP APIs to interact with target remote services independently of the local build tree.
+
+**Unmask Silent Failures:** When external integrations (like SMTP or webhooks) fail in production but no errors are thrown, immediately suspect `try/catch` blocks that silently swallow exceptions. Do not rely entirely on local testing if environments diverge. Instead, deploy a targeted, isolated diagnostic endpoint to the *exact production environment* to expose the raw runtime error.
+
+---
+
+## Stripe Checkout Integrations
+
+**Session vs. Payment Intent Metadata:** When using Stripe Checkout, custom `metadata` attached during checkout session creation lives exclusively on the `checkout.session.completed` event object. It does NOT automatically propagate to the `payment_intent.succeeded` event object. For fulfillment workflows requiring customer data (like generating tokens or sending emails), process the fulfillment strictly on the `checkout.session.completed` event.
+
+---
+
 ## Configuration & Credentials
 
 **You have complete access.** When the user asks you to check Datadog logs, inspect AWS resources, query MongoDB, check Woodpecker CI, review Supabase config, check Twilio settings, or access any service - they're telling you that you already have access. Don't ask for permission. Find the credentials and use them.

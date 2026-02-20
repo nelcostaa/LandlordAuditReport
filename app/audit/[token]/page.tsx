@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Info } from "lucide-react";
 import { Audit } from "@/types/database";
 import { questions, getQuestionsByTier, groupQuestionsByCategory, Question } from "@/lib/questions";
 
@@ -604,14 +605,6 @@ function AuditFormContent({
               <span className="text-sm text-gray-600">Property Address:</span>
               <p className="font-medium">{audit.property_address}</p>
             </div>
-            <div>
-              <span className="text-sm text-gray-600">Risk Audit Tier:</span>
-              <p className="font-medium">{audit.risk_audit_tier.replace("_", " ").toUpperCase()}</p>
-            </div>
-            <div>
-              <span className="text-sm text-gray-600">Conducted By:</span>
-              <p className="font-medium">{audit.conducted_by}</p>
-            </div>
           </CardContent>
         </Card>
 
@@ -732,11 +725,6 @@ function AuditFormContent({
                       <CardTitle className="text-base font-medium leading-relaxed">
                         Q{question.id}: {question.text}
                       </CardTitle>
-                      {question.critical && (
-                        <Badge variant="destructive" className="shrink-0">
-                          STATUTORY REQUIREMENT
-                        </Badge>
-                      )}
                       {isAnswered && (
                         <div className="shrink-0 animate-in fade-in zoom-in duration-300">
                           <svg
@@ -757,15 +745,9 @@ function AuditFormContent({
                     </div>
                     {question.motivation_learning_point && (
                       <CardDescription className="mt-3 italic text-gray-600 leading-relaxed">
+                        <span className="font-semibold text-gray-900 not-italic block mb-1">Why it matters:</span>
                         {question.motivation_learning_point}
                       </CardDescription>
-                    )}
-                    {question.comment && (
-                      <div className="mt-3">
-                        <p className="text-sm text-gray-600">
-                          <span className="font-semibold text-gray-900">Guidance:</span> {question.comment}
-                        </p>
-                      </div>
                     )}
                   </CardHeader>
                   <CardContent>
@@ -830,12 +812,18 @@ function AuditFormContent({
                     
                     {/* Comment textarea */}
                     <div className="mt-4 pt-4 border-t border-gray-100">
-                      <label 
-                        htmlFor={`comment-${question.id}`}
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Add a comment (optional)
-                      </label>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <label 
+                          htmlFor={`comment-${question.id}`}
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Supporting Notes
+                        </label>
+                        <Info 
+                          className="w-4 h-4 text-gray-400 cursor-help" 
+                          title="ADD DETAILS HERE TO HELP THE VIEWER UNDERSTAND YOUR RESPONSE."
+                        />
+                      </div>
                       <textarea
                         id={`comment-${question.id}`}
                         placeholder="Add any additional notes or context for this question..."
