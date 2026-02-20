@@ -44,7 +44,7 @@ export function ServiceCard({
             {isPopular && !isBeta && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
-                        ✨ Most Popular
+                        Most Popular
                     </span>
                 </div>
             )}
