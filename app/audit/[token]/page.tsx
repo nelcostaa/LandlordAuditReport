@@ -721,6 +721,13 @@ function AuditFormContent({
                         {question.motivation_learning_point}
                       </CardDescription>
                     )}
+                    {question.comment && (
+                      <div className="mt-3">
+                        <p className="text-sm text-blue-700 font-medium">
+                          {question.comment}
+                        </p>
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <Controller
