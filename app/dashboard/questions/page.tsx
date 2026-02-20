@@ -125,18 +125,16 @@ export default function QuestionsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Statutory Requirement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {questions.filter((q) => q.is_critical).length}
-            </div>
-          </CardContent>
-        </Card>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-gray-600">
+                      Critical
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{questions.filter((q) => q.is_critical).length}</div>
+                  </CardContent>
+                </Card>
 
         <Card>
           <CardHeader className="pb-3">
@@ -174,7 +172,7 @@ export default function QuestionsPage() {
                       </Badge>
                       <Badge>{question.category.split(" ")[0]}</Badge>
                       {question.is_critical && (
-                        <Badge variant="destructive">STATUTORY REQUIREMENT</Badge>
+                        <Badge variant="destructive">CRITICAL</Badge>
                       )}
                       {!question.is_active && (
                         <Badge variant="secondary">Inactive</Badge>

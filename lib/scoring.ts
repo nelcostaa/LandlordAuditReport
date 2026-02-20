@@ -138,7 +138,7 @@ export function generateRecommendedActions(
     if (question.critical && response.answer_value === 1) {
       priority = "critical";
       timeframe = "Immediate action required (within 7 days)";
-      recommendation = `This is a STATUTORY REQUIREMENT compliance issue. ${selectedOption.label}. You must address this immediately to avoid legal issues and protect your tenancy.`;
+      recommendation = `This is a CRITICAL COMPLIANCE issue. ${selectedOption.label}. You must address this immediately to avoid legal issues and protect your tenancy.`;
       
       actions.push({
         priority,

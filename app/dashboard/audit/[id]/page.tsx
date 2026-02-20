@@ -102,13 +102,13 @@ export default function AuditReviewPage() {
     switch (priority) {
       case "critical":
         if (isCritical && answerValue === 1) {
-          return "Marked as STATUTORY REQUIREMENT because this is a statutory requirement question and received the lowest score (1).";
+          return "Marked as CRITICAL because this is a legal requirement question and received the lowest score (1).";
         } else if (weight >= 2.0 && answerValue < 5) {
-          return "Marked as STATUTORY REQUIREMENT because this question has high importance (weight ≥ 2.0) and received a low score (< 5).";
+          return "Marked as CRITICAL because this question has high importance (weight ≥ 2.0) and received a low score (< 5).";
         }
-        return "Marked as STATUTORY REQUIREMENT due to compliance requirements.";
+        return "Marked as CRITICAL due to compliance requirements.";
       case "high":
-        return "Marked as HIGH because the answer received the lowest score (1) and requires attention, but it's not a statutory requirement or high-weight question.";
+        return "Marked as HIGH because the answer received the lowest score (1) and requires attention, but it's not a legal requirement or high-weight question.";
       case "medium":
         return "Marked as MEDIUM because the answer received a moderate score (5) and the question has standard importance.";
       case "low":
@@ -121,7 +121,7 @@ export default function AuditReviewPage() {
   const getTimeframeExplanation = (priority: string) => {
     switch (priority) {
       case "critical":
-        return "Timeframe is automatically set to 7 days for statutory requirement compliance issues that require immediate attention.";
+        return "Timeframe is automatically set to 7 days for critical compliance issues that require immediate attention.";
       case "high":
         return "Timeframe is automatically set to 30 days for high-priority issues that need prompt attention.";
       case "medium":
@@ -234,7 +234,7 @@ export default function AuditReviewPage() {
                         <div className="flex items-center gap-2 mb-2">
                           <div className="flex items-center gap-1.5">
                             <Badge className={getPriorityBadge(action.priority)}>
-                              {action.priority === "critical" ? "STATUTORY REQUIREMENT" : action.priority.toUpperCase()}
+                              {action.priority === "critical" ? "CRITICAL" : action.priority.toUpperCase()}
                             </Badge>
                             <div className="relative group">
                               <Info className="w-4 h-4 text-gray-400 cursor-help hover:text-gray-600 transition-colors" />
@@ -309,7 +309,7 @@ export default function AuditReviewPage() {
                     <div className="flex gap-2 shrink-0">
                       {question.critical && (
                         <Badge variant="destructive" className="text-xs">
-                          STATUTORY REQUIREMENT
+                          CRITICAL
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-xs">
@@ -342,14 +342,6 @@ export default function AuditReviewPage() {
           <div>
             <span className="text-sm text-gray-600">Status:</span>
             <p className="font-medium capitalize">{audit.status}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-600">Risk Tier:</span>
-            <p className="font-medium">{audit.risk_audit_tier.replace("_", " ").toUpperCase()}</p>
-          </div>
-          <div>
-            <span className="text-sm text-gray-600">Conducted By:</span>
-            <p className="font-medium">{audit.conducted_by}</p>
           </div>
           <div>
             <span className="text-sm text-gray-600">Created:</span>
