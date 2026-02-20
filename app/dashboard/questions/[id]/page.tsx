@@ -505,7 +505,7 @@ export default function EditQuestionPage() {
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-ring cursor-pointer"
               />
               <Label htmlFor="is_critical" className="cursor-pointer flex items-center gap-2">
-                Mark as <Badge variant="destructive">STATUTORY REQUIREMENT</Badge> question
+                Mark as <Badge variant="destructive">CRITICAL</Badge> question
               </Label>
             </div>
           </CardContent>
