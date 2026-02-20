@@ -6,11 +6,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-02-24.acacia"
 });
 
-// Service pricing configuration (amounts in pence for GBP)
-const SERVICE_PRICES: Record<string, { amount: number; name: string }> = {
-  online: { amount: 5000, name: "Online Risk Audit" },    // £50.00
-};
-
 export async function POST(req: NextRequest) {
   try {
     // Rate limiting check
@@ -28,32 +23,44 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const serviceId = body.serviceId || body.serviceID;
+    const priceId = body.priceId;
     const email = body.email;
     const name = body.name;
     const address = body.address || body.propertyAddress;
 
     // Validate required fields
-    if (!serviceId || !email || !name || !address) {
+    if (!priceId || !email || !name || !address) {
       return NextResponse.json(
-        { error: "Missing required fields: serviceId, email, name, address" },
+        { error: "Missing required fields: priceId, email, name, address" },
         { status: 400 }
       );
     }
 
-    // Validate service type and get price
-    const service = SERVICE_PRICES[serviceId];
-    if (!service) {
+    // Validate price exists and is active in Stripe
+    let price: Stripe.Price;
+    try {
+      price = await stripe.prices.retrieve(priceId);
+      if (!price.active) {
+        return NextResponse.json(
+          { error: "This product is no longer available." },
+          { status: 400 }
+        );
+      }
+    } catch {
       return NextResponse.json(
-        { error: `Invalid service type: ${serviceId}. Valid option: online` },
+        { error: "Invalid price. Please refresh and try again." },
         { status: 400 }
       );
     }
+
+    // Resolve service type from product metadata or default
+    const productId = typeof price.product === 'string' ? price.product : price.product?.toString();
+    const serviceType = productId || "online";
 
     // Get the origin for redirect URLs
     const origin = req.headers.get("origin") || "https://landlord-audit.vercel.app";
 
-    // Create Stripe Checkout Session (redirect-based)
+    // Create Stripe Checkout Session using the registered price
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: email,
@@ -61,14 +68,7 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}?canceled=true`,
       line_items: [
         {
-          price_data: {
-            currency: "gbp",
-            unit_amount: service.amount,
-            product_data: {
-              name: service.name,
-              description: `Property audit for: ${address}`,
-            },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -76,15 +76,14 @@ export async function POST(req: NextRequest) {
         customer_name: name,
         customer_email: email,
         property_address: address,
-        service_type: serviceId,
+        service_type: serviceType,
       },
-      // Pre-fill customer name in Stripe Checkout
       payment_intent_data: {
         metadata: {
           customer_name: name,
           customer_email: email,
           property_address: address,
-          service_type: serviceId,
+          service_type: serviceType,
         },
       },
     });
