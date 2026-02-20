@@ -49,3 +49,4 @@ next-env.d.ts
 # Test PDFs
 test-report.pdf
 test-minimal.pdf
+.gemini/settings.json

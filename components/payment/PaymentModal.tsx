@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   ArrowLeft,
-  ArrowRight,
   User,
   Loader2,
   ExternalLink,
@@ -23,8 +22,9 @@ interface Service {
   id: string;
   title: string;
   price: number;
+  priceId: string;
   description: string;
-  features: readonly string[];
+  features: string[];
 }
 
 interface PaymentModalProps {
@@ -45,7 +45,7 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setError(null); // Clear error on input change
+    setError(null);
   };
 
   const isFormValid = formData.name && formData.email && formData.propertyAddress;
@@ -65,7 +65,7 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          serviceId: service.id,
+          priceId: service.priceId,
           email: formData.email,
           name: formData.name,
           address: formData.propertyAddress,
@@ -105,7 +105,7 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
             </div>
             <div>
               <p className="font-medium">Your Details</p>
-              <p className="text-xs text-muted-foreground">Step 1 of 2 • Payment via Stripe</p>
+              <p className="text-xs text-muted-foreground">Step 1 of 2 &bull; Payment via Stripe</p>
             </div>
           </div>
         </div>
@@ -163,7 +163,7 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
               </div>
               <div className="flex justify-between items-center mt-2">
                 <span className="text-muted-foreground">Amount</span>
-                <span className="font-bold text-lg">£{service.price}</span>
+                <span className="font-bold text-lg">&pound;{service.price}</span>
               </div>
             </div>
           </div>
