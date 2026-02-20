@@ -50,17 +50,21 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         console.log(`Checkout session completed: ${session.id}`);
         
-        // If payment was successful, the payment_intent.succeeded will also fire
-        // and handle audit creation. But we log here for visibility.
-        if (session.payment_status === "paid" && session.payment_intent) {
-          console.log(`Session ${session.id} paid via PaymentIntent ${session.payment_intent}`);
+        // Ensure payment was successful before provisioning
+        if (session.payment_status === "paid") {
+          console.log(`Session ${session.id} paid, processing audit creation`);
+          await handlePaymentSuccess(session);
+        } else {
+          console.log(`Session ${session.id} completed but payment status is: ${session.payment_status}`);
         }
         break;
       }
 
       case "payment_intent.succeeded": {
+        // We log this, but handle the actual provisioning in checkout.session.completed
+        // because Checkout Sessions hold the metadata in the new flow
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await handlePaymentSuccess(paymentIntent);
+        console.log(`PaymentIntent succeeded: ${paymentIntent.id}`);
         break;
       }
 
@@ -82,17 +86,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
-  const metadata = paymentIntent.metadata;
+async function handlePaymentSuccess(session: Stripe.Checkout.Session) {
+  const metadata = session.metadata || {};
   
-  // Extract customer information from payment metadata
+  // Extract customer information from session metadata
   const customerName = metadata.customer_name;
   const customerEmail = metadata.customer_email;
   const propertyAddress = metadata.property_address;
   const serviceType = metadata.service_type;
 
+  // The Payment Intent ID is attached to the session
+  // For checkout sessions this is a string, handle typing safely
+  const paymentIntentId = typeof session.payment_intent === 'string' 
+    ? session.payment_intent 
+    : session.payment_intent?.id || session.id;
+
   if (!customerName || !customerEmail || !propertyAddress || !serviceType) {
-    console.error("Missing metadata in payment intent:", paymentIntent.id);
+    console.error("Missing metadata in checkout session:", session.id, "Metadata:", metadata);
     return;
   }
 
@@ -103,13 +113,13 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
   const token = randomUUID();
 
   try {
-    // Check if audit already exists for this payment intent
+    // Check if audit already exists for this payment intent or session
     const existingAudit = await sql`
-      SELECT id FROM audits WHERE payment_intent_id = ${paymentIntent.id}
+      SELECT id FROM audits WHERE payment_intent_id = ${paymentIntentId}
     `;
 
     if (existingAudit.rows.length > 0) {
-      console.log(`Audit already exists for payment ${paymentIntent.id}`);
+      console.log(`Audit already exists for payment ${paymentIntentId}`);
       return;
     }
 
@@ -137,16 +147,16 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         ${propertyAddress},
         ${tier},
         'Self-Service',
-        ${paymentIntent.id},
+        ${paymentIntentId},
         'paid',
-        ${paymentIntent.amount},
+        ${session.amount_total || 5000},
         ${serviceType},
         NOW()
       )
       RETURNING id, token
     `;
 
-    console.log(`Created audit ${result.rows[0].id} for payment ${paymentIntent.id}`);
+    console.log(`Created audit ${result.rows[0].id} for payment ${paymentIntentId}`);
 
     // Send email notification to customer with audit link
     try {
@@ -179,12 +189,12 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
           created_at
         )
         VALUES (
-          ${paymentIntent.id},
+          ${paymentIntentId},
           ${customerName},
           ${customerEmail},
           ${propertyAddress},
           ${serviceType},
-          ${paymentIntent.amount},
+          ${session.amount_total || 5000},
           ${error instanceof Error ? error.message : 'Unknown error'},
           NOW()
         )
@@ -193,7 +203,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
           last_retry_at = NOW(),
           error_message = EXCLUDED.error_message
       `;
-      console.log(`Logged failed payment ${paymentIntent.id} for recovery`);
+      console.log(`Logged failed payment ${paymentIntentId} for recovery`);
     } catch (logError) {
       console.error("Failed to log failed payment:", logError);
     }
