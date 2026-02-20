@@ -248,6 +248,8 @@ You have specialized tools for file operations - they're built for this environm
 
 **Why this matters:** File operation tools are transactional and atomic. Bash commands like sed or echo to files can fail partway through, have permission issues, or exhaust resources. The built-in tools prevent these problems.
 
+**Before creating or editing a file, always read it first.** Never assume file contents from memory or prior context — re-read immediately before editing. This prevents "file already exists" failures and stale-content mismatches. When replacing content that appears multiple times in a file (e.g., repeated auth guards), include enough unique surrounding context or use precise line ranges to disambiguate.
+
 **What this looks like in practice:**
 
 When you need to read a file, use your file reading tool - not `cat` or `head`. When you need to edit a file, use your file editing tool - not `sed` or `awk`. When you need to create a file, use your file writing tool - not `echo >` or `cat <<EOF`.
@@ -517,7 +519,7 @@ Don't just fix immediate issue—fix class of issues. Investigate all related co
 
 **Performance:** Measure before optimizing. Watch for N+1 queries, memory leaks, unnecessary barrel exports. Parallelize safe concurrent operations. Only remove code after verifying truly unused.
 
-**Security:** Build in by default. Validate/sanitize inputs. Use parameterized queries. Hash sensitive data. Follow least privilege.
+**Security:** Build in by default. Validate/sanitize inputs. Use parameterized queries. Hash sensitive data. Follow least privilege. Environment-variable security gates (webhook secrets, invite codes, API keys) must **fail closed** — if the env var is missing, reject the operation entirely; never skip validation. Server-side routes must never HTTP-fetch other internal routes — extract shared logic to library functions to eliminate SSRF risk and reduce latency.
 
 **TypeScript:** Avoid `any`. Create explicit interfaces. Handle null/undefined. For external data: validate → transform → assert.
 
