@@ -245,4 +245,44 @@ User: "Check Woodpecker CI status"
 - **Databases**: `DATABASE_URL`, `MONGODB_URI`, `POSTGRES_URI` in .env
 - **Cloud**: AWS CLI (~/.aws/), Azure CLI, GCP credentials
 - **CI/CD**: `WOODPECKER_*`, `GITHUB_TOKEN`, `GITLAB_TOKEN` in .env
-- **Monitoring**: `DD_API_KEY` (Datadog
+- **Monitoring**: `DD_API_KEY` (Datadog)
+
+---
+
+## MCP Server Configuration
+
+**Local vs. Remote MCP Servers:** Standard Model Context Protocol (MCP) clients (like Claude Desktop, Cursor, or Gemini) do not natively support connecting directly to remote SSE (Server-Sent Events) servers via `"type": "http"` or `"url"` properties in the `mcp_config.json` schema.
+
+When configuring an MCP server (e.g., Stripe's MCP server), always use the `stdio` transport. Define a local executable to run the server using the standard `command`, `args`, and `env` properties.
+
+**Incorrect (Remote SSE setup):**
+```json
+{
+  "mcpServers": {
+    "stripe": {
+      "type": "http",
+      "url": "https://mcp.stripe.com"
+    }
+  }
+}
+```
+
+**Correct (Local `stdio` setup via `npx`):**
+```json
+{
+  "mcpServers": {
+    "stripe": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@stripe/mcp"
+      ],
+      "env": {
+        "STRIPE_SECRET_KEY": "<sk_test_...>"
+      }
+    }
+  }
+}
+```
+
+*Note:* For Stripe specifically, the npm package `@stripe/mcp` strictly requires the environment variable `STRIPE_SECRET_KEY`, not `STRIPE_API_KEY`.

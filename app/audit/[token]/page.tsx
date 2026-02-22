@@ -124,6 +124,7 @@ function AuditFormContent({
   token: string;
   questions: Question[];
 }) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -520,7 +521,8 @@ function AuditFormContent({
         localStorage.removeItem(`audit-form-${audit.token}`);
       }
 
-      setSubmitted(true);
+      // Redirect to the PDF report page
+      router.push(`/audit/${token}/report`);
     } catch (error) {
       setError("An error occurred while submitting the audit");
       window.scrollTo({ top: 0, behavior: "smooth" });

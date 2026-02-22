@@ -143,6 +143,26 @@ Field names like `"1.1"` are interpreted as nested paths `{ 1: { 1: value } }`, 
 
 This ensures proper form state management and prevents the 33-field bug.
 
+### 🔌 Stripe MCP Server Configuration
+For AI agent integration using the Model Context Protocol (MCP) with Stripe, standard MCP clients (like Claude Desktop or Gemini) do not natively support remote SSE connections (e.g., `"type": "http"`) in `mcp_config.json`. 
+
+You must configure it as a local `stdio` process via `npx`. Also, specifically for the `@stripe/mcp` package, the required environment variable is `STRIPE_SECRET_KEY` (not `STRIPE_API_KEY`).
+
+**Correct `mcp_config.json` Example:**
+```json
+{
+  "mcpServers": {
+    "stripe": {
+      "command": "npx",
+      "args": ["-y", "@stripe/mcp"],
+      "env": {
+        "STRIPE_SECRET_KEY": "sk_test_..."
+      }
+    }
+  }
+}
+```
+
 **Note**: `/docs` folder is in `.gitignore` for personal documentation.
 
 ## License
