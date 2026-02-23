@@ -81,14 +81,14 @@ const baseStyles = `
     background: white;
   }
   .page {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 18mm 20mm;
+    width: 100%;
+    padding: 0;
     background: white;
     page-break-after: always;
+    break-after: page;
     position: relative;
   }
-  .page:last-child { page-break-after: auto; }
+  .page:last-child { page-break-after: auto; break-after: auto; }
   .page-header {
     font-size: 9pt;
     color: ${COLORS.mediumGray};
