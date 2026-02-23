@@ -7,7 +7,7 @@ import { renderToBuffer } from '@react-pdf/renderer';
 import { transformAuditToReportData, formatReportDate, sanitizeAddressForFilename } from '@/lib/pdf/formatters';
 import { calculateAuditScores } from '@/lib/scoring';
 import { generatePDFFromHTML } from '@/lib/pdf/puppeteer-generator';
-import { generateMinimalReportHTML } from '@/components/pdf-html/MinimalReportHTML';
+import { generateComprehensiveReportHTML } from '@/components/pdf-html/ComprehensiveReportHTML';
 
 /**
  * GET /api/reports/[auditId]
@@ -125,15 +125,12 @@ export async function GET(
     
       // 9. Generate PDF using Puppeteer (Vercel compatible)
       console.log('[PDF] Step 9: Generating HTML template...');
-      const reportId = `LRA-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-XXXXXX`;
-      const html = generateMinimalReportHTML({
-        propertyAddress: reportData.propertyAddress,
-        landlordName: reportData.landlordName,
-        auditorName: reportData.auditorName,
-        overallScore: reportData.overallScore,
-        riskTier: reportData.riskTier,
+      const reportId = `LRA-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(auditId).padStart(6, '0')}`;
+      const html = generateComprehensiveReportHTML({
+        reportData,
         reportId,
         reportDate: formatReportDate(reportData.auditEndDate),
+        recommendedActions: scores.recommendedActions,
       });
       
       console.log('[PDF] Step 10: Rendering PDF with Puppeteer...');
