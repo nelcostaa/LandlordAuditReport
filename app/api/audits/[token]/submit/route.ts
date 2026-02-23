@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
 import { z } from "zod";
+import { sendReportEmail } from "@/lib/email";
 
 const submitSchema = z.object({
   responses: z
@@ -26,7 +27,8 @@ export async function POST(
 
     // Get audit
     const auditResult = await sql`
-      SELECT id, status, risk_audit_tier, payment_status FROM audits WHERE token = ${token}
+      SELECT id, status, risk_audit_tier, payment_status, landlord_email, client_name, property_address
+      FROM audits WHERE token = ${token}
     `;
 
     if (auditResult.rows.length === 0) {
@@ -154,6 +156,22 @@ export async function POST(
       SET status = 'submitted', submitted_at = NOW()
       WHERE id = ${audit.id}
     `;
+
+    // Send report completion email (non-blocking - don't fail submission if email fails)
+    if (audit.landlord_email) {
+      try {
+        await sendReportEmail(
+          audit.landlord_email,
+          token,
+          audit.client_name || 'Valued Customer',
+          audit.property_address || 'Your property'
+        );
+        console.log(`[Submit] Report email sent to ${audit.landlord_email}`);
+      } catch (emailError) {
+        console.error(`[Submit] Failed to send report email:`, emailError);
+        // Don't fail the submission - audit is already saved
+      }
+    }
 
     return NextResponse.json({
       message: "Audit submitted successfully",
