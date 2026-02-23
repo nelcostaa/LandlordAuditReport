@@ -19,11 +19,13 @@ export async function GET(
     const { id } = await params;
     auditId = parseInt(id);
 
-    // Get audit details
-    const auditResult = await sql`
-      SELECT * FROM audits
-      WHERE id = ${auditId} AND auditor_id = ${session.user.id}
-    `;
+    // Admin users can review all audits (including self-service with NULL auditor_id)
+    // Regular auditors can only review their own
+    const isAdmin = session.user.role === 'admin';
+
+    const auditResult = isAdmin
+      ? await sql`SELECT * FROM audits WHERE id = ${auditId}`
+      : await sql`SELECT * FROM audits WHERE id = ${auditId} AND auditor_id = ${session.user.id}`;
 
     if (auditResult.rows.length === 0) {
       return NextResponse.json(

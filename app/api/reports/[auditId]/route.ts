@@ -33,11 +33,12 @@ export async function GET(
     const { auditId } = await params;
     console.log(`[PDF] Generating report for audit ${auditId}...`);
     
-    // 2. Fetch audit from DB (with ownership check)
-    const auditResult = await sql`
-      SELECT * FROM audits
-      WHERE id = ${auditId} AND auditor_id = ${session.user.id}
-    `;
+    // 2. Fetch audit from DB (admin can access all, regular auditors only their own)
+    const isAdmin = session.user.role === 'admin';
+    
+    const auditResult = isAdmin
+      ? await sql`SELECT * FROM audits WHERE id = ${auditId}`
+      : await sql`SELECT * FROM audits WHERE id = ${auditId} AND auditor_id = ${session.user.id}`;
     
     if (auditResult.rows.length === 0) {
       console.log(`[PDF] Audit ${auditId} not found or access denied`);
