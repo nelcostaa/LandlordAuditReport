@@ -117,6 +117,88 @@ The Landlord Audit Team
 }
 
 /**
+ * Email template for sending report link after questionnaire completion.
+ */
+function getReportEmailTemplate(
+  clientName: string,
+  reportLink: string,
+  propertyAddress: string
+) {
+  const textContent = `
+Hello ${clientName},
+
+Thank you for completing your Landlord Risk Audit questionnaire!
+
+Your compliance report for ${propertyAddress} is now ready.
+
+View and download your report here: ${reportLink}
+
+This report contains your overall compliance score, risk assessment, and recommended actions to improve your property management.
+
+Please download and keep a copy for your records.
+
+If you have any questions, please contact us.
+
+Best regards,
+The Landlord Audit Team
+`.trim();
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Landlord Audit Report is Ready</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 10px 10px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">Landlord Audit</h1>
+    <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 14px;">Compliance Report Ready</p>
+  </div>
+  
+  <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0; border-top: none;">
+    <h2 style="color: #333; margin-top: 0;">Hello ${clientName},</h2>
+    
+    <p>Thank you for completing your Landlord Risk Audit questionnaire!</p>
+    
+    <p><strong>Property:</strong> ${propertyAddress}</p>
+    
+    <p>Your compliance report is now ready. It contains your overall compliance score, risk assessment, and recommended actions.</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${reportLink}" 
+         style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                color: white; 
+                padding: 15px 30px; 
+                text-decoration: none; 
+                border-radius: 5px; 
+                font-weight: bold;
+                display: inline-block;">
+        View Your Report
+      </a>
+    </div>
+    
+    <p style="font-size: 14px; color: #666;">
+      Please download and keep a copy of your report for your records.
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+    
+    <p style="font-size: 12px; color: #999; margin-bottom: 0;">
+      If you have any questions, please contact us.<br>
+      Best regards,<br>
+      <strong>The Landlord Audit Team</strong>
+    </p>
+  </div>
+</body>
+</html>
+`.trim();
+
+  return { textContent, htmlContent };
+}
+
+/**
  * Send questionnaire email to landlord.
  *
  * @param to - Recipient email address
@@ -164,6 +246,56 @@ export async function sendQuestionnaireEmail(
       }
     }
     throw error; // Re-throw to allow handler to log/handle it
+  }
+}
+
+/**
+ * Send report completion email to landlord with link to their PDF report.
+ *
+ * @param to - Recipient email address
+ * @param auditToken - Unique audit token for the report link
+ * @param clientName - Name of the landlord/client
+ * @param propertyAddress - Address of the property being audited
+ */
+export async function sendReportEmail(
+  to: string,
+  auditToken: string,
+  clientName: string,
+  propertyAddress: string
+): Promise<void> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://landlord-audit.vercel.app';
+  const reportLink = `${baseUrl}/audit/${auditToken}/report`;
+
+  const { textContent, htmlContent } = getReportEmailTemplate(
+    clientName,
+    reportLink,
+    propertyAddress
+  );
+
+  const transporter = getTransporter();
+  const from = process.env.SMTP_FROM || 'Landlord Audit <no-reply@landlordaudit.com>';
+
+  console.log(`[Email] Sending report email to ${to}...`);
+
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject: 'Your Landlord Audit Report is Ready',
+      text: textContent,
+      html: htmlContent,
+    });
+    console.log(`[Email] Report email sent successfully: ${info.messageId}`);
+  } catch (error) {
+    console.error(`[Email] Failed to send report email:`, error);
+    if (error instanceof Error) {
+      if (error.message.includes('EAUTH')) {
+        console.error('[Email] SMTP Authentication failed - check SMTP_USER and SMTP_PASSWORD');
+      } else if (error.message.includes('ECONNREFUSED')) {
+        console.error('[Email] SMTP Connection refused - check SMTP_HOST and SMTP_PORT');
+      }
+    }
+    throw error;
   }
 }
 
