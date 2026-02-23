@@ -5,7 +5,7 @@ import { sql } from '@vercel/postgres';
 import { transformAuditToReportData, formatReportDate, sanitizeAddressForFilename } from '@/lib/pdf/formatters';
 import { calculateAuditScores } from '@/lib/scoring';
 import { generatePDFFromHTML } from '@/lib/pdf/puppeteer-generator';
-import { generateMinimalReportHTML } from '@/components/pdf-html/MinimalReportHTML';
+import { generateComprehensiveReportHTML } from '@/components/pdf-html/ComprehensiveReportHTML';
 
 /**
  * GET /api/audits/[token]/report
@@ -88,16 +88,13 @@ export async function GET(
     // 6. Transform to report format
     const reportData = transformAuditToReportData(audit, responses, questions, scores);
 
-    // 7. Generate PDF
-    const reportId = `LRA-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-XXXXXX`;
-    const html = generateMinimalReportHTML({
-      propertyAddress: reportData.propertyAddress,
-      landlordName: reportData.landlordName,
-      auditorName: reportData.auditorName,
-      overallScore: reportData.overallScore,
-      riskTier: reportData.riskTier,
+    // 7. Generate PDF with comprehensive template
+    const reportId = `LRA-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(audit.id).padStart(6, '0')}`;
+    const html = generateComprehensiveReportHTML({
+      reportData,
       reportId,
       reportDate: formatReportDate(reportData.auditEndDate),
+      recommendedActions: scores.recommendedActions,
     });
 
     console.log('[PDF-Public] Rendering PDF with Puppeteer...');
