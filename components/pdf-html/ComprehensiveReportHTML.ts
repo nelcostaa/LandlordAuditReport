@@ -6,16 +6,16 @@ import { RecommendedAction } from '@/lib/scoring';
 // ─── Color Helpers ───
 
 const COLORS = {
-  primaryGreen: '#2e7d32',
-  darkGreen: '#1b5e20',
-  red: '#d32f2f',
-  orange: '#e65100',
-  blue: '#1565c0',
-  paleBlue: '#e3f2fd',
-  black: '#212121',
-  darkGray: '#424242',
-  mediumGray: '#757575',
-  lightGray: '#e0e0e0',
+  primaryGreen: '#38761d',
+  darkGreen: '#34a853',
+  red: '#ea4335',
+  orange: '#ffae15',
+  blue: '#0b5394',
+  paleBlue: '#dae6fa',
+  black: '#000000',
+  darkGray: '#434343',
+  mediumGray: '#666666',
+  lightGray: '#cccccc',
   white: '#ffffff',
 };
 
@@ -23,6 +23,12 @@ function getTrafficColor(score: number): string {
   if (score >= 7) return COLORS.darkGreen;
   if (score >= 4) return COLORS.orange;
   return COLORS.red;
+}
+
+function getTrafficBgColor(score: number): string {
+  if (score >= 7) return '#e6f4ea';
+  if (score >= 4) return '#fff8e1';
+  return '#fce8e6';
 }
 
 function getTrafficLabel(score: number): string {
@@ -75,8 +81,8 @@ const baseStyles = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 10pt;
-    line-height: 1.5;
+    font-size: 11pt;
+    line-height: 1.15;
     color: ${COLORS.black};
     background: white;
   }
@@ -90,81 +96,76 @@ const baseStyles = `
   }
   .page:last-child { page-break-after: auto; break-after: auto; }
   .page-header {
+    display: flex;
+    justify-content: space-between;
     font-size: 9pt;
     color: ${COLORS.mediumGray};
-    padding-bottom: 8px;
     margin-bottom: 15px;
-    border-bottom: 2px solid ${COLORS.primaryGreen};
   }
   .page-footer {
-    position: absolute;
-    bottom: 15mm;
-    left: 20mm;
-    right: 20mm;
     text-align: center;
-    font-size: 8pt;
+    font-size: 9pt;
     color: ${COLORS.mediumGray};
-    border-top: 1px solid ${COLORS.lightGray};
-    padding-top: 8px;
+    margin-top: 30px;
   }
   h1 {
-    font-size: 16pt;
+    font-size: 19pt;
     font-weight: bold;
-    color: ${COLORS.black};
-    margin-bottom: 15px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid ${COLORS.primaryGreen};
+    color: ${COLORS.primaryGreen};
+    margin-top: 0;
+    margin-bottom: 25px;
   }
   h2 {
-    font-size: 13pt;
+    font-size: 15pt;
     font-weight: bold;
     color: ${COLORS.black};
-    margin-top: 20px;
-    margin-bottom: 10px;
+    margin-top: 28px;
+    margin-bottom: 6px;
   }
   h3 {
-    font-size: 11pt;
+    font-size: 13pt;
     font-weight: bold;
     color: ${COLORS.darkGray};
-    margin-top: 15px;
-    margin-bottom: 8px;
+    margin-top: 26px;
+    margin-bottom: 4px;
   }
   p, .paragraph {
-    font-size: 10pt;
-    line-height: 1.5;
+    font-size: 11pt;
+    line-height: 1.15;
     margin-bottom: 10px;
-    color: ${COLORS.darkGray};
+    text-align: justify;
+    color: ${COLORS.black};
   }
   table {
     width: 100%;
     border-collapse: collapse;
     margin: 10px 0;
-    font-size: 10pt;
+    font-size: 11pt;
   }
   th {
     background: ${COLORS.paleBlue};
     font-weight: bold;
     padding: 8px 10px;
     text-align: left;
-    border-bottom: 2px solid ${COLORS.blue};
-    font-size: 10pt;
+    border-bottom: 1px solid ${COLORS.lightGray};
+    font-size: 12pt;
   }
   td {
     padding: 8px 10px;
     border-bottom: 1px solid ${COLORS.lightGray};
     vertical-align: top;
-    font-size: 10pt;
+    font-size: 11pt;
   }
   .bullet-list { margin-left: 20px; margin-top: 5px; }
-  .bullet-item { margin-bottom: 4px; font-size: 10pt; line-height: 1.4; }
+  .bullet-item { margin-bottom: 4px; font-size: 11pt; line-height: 1.15; }
   @media print {
     .page { page-break-after: always; }
     .page:last-child { page-break-after: auto; }
   }
 `;
 
-const pageHeader = `<div class="page-header">Landlord Risk Audit Report</div>`;
-const pageFooter = `<div class="page-footer">Landlord Safeguarding Ltd. &mdash; Confidential</div>`;
+const pageHeader = `<div class="page-header"><span>Landlord Risk Audit Report</span></div>`;
+const pageFooter = `<div class="page-footer">&copy; Copyright Landlord Safeguarding Ltd.</div>`;
 
 // ─── Main Generator ───
 
