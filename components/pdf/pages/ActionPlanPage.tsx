@@ -2,7 +2,7 @@
 import { Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { PageHeader } from '../shared/PageHeader';
 import { PageFooter } from '../shared/PageFooter';
-import { styles as globalStyles, COLORS } from '@/lib/pdf/styles';
+import { styles as globalStyles, COLORS, formatScore } from '@/lib/pdf/styles';
 import { ReportData } from '@/lib/pdf/formatters';
 
 const styles = StyleSheet.create({
@@ -71,7 +71,6 @@ export const ActionPlanPage = ({ data }: ActionPlanPageProps) => {
   // Recommendations = Medium-term (90 days)
   Object.values(data.recommendationsByCategory).flat().forEach(rec => {
     if (rec.score < 7) {
-      const { formatScore } = require('@/lib/pdf/styles');
       mediumTermActions.push(`${rec.subcategory}: Implement recommended improvements (Score: ${formatScore(rec.score)})`);
     }
   });
