@@ -145,7 +145,7 @@ export function PaymentModal({ isOpen, onClose, service }: PaymentModalProps) {
                 name="propertyAddress"
                 value={formData.propertyAddress}
                 onChange={handleInputChange}
-                placeholder="123 Main Street, London"
+                placeholder="6 Cornwall Avenue"
               />
             </div>
 
