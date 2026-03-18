@@ -264,21 +264,20 @@ export function generateComprehensiveReportHTML(input: ComprehensiveReportInput)
 
 <!-- ═══════ PAGE 1: COVER PAGE ═══════ -->
 <div class="page" style="padding-top:0;">
-  <div style="width:100%;height:12px;background:${COLORS.primaryGreen};"></div>
   <div style="text-align:right;margin-top:20px;margin-bottom:-50px;">
     <div style="font-size:9pt;color:${COLORS.mediumGray};">Report ID: ${reportId}</div>
     <div style="font-size:9pt;color:${COLORS.mediumGray};">Report Date: ${reportDate}</div>
     <div style="font-size:10pt;font-weight:bold;color:${overallColor};">Risk Tier ${tierNumber}</div>
   </div>
   <div style="text-align:center;margin-top:120px;">
-    <div style="font-size:24pt;font-weight:bold;color:${COLORS.black};margin-bottom:20px;">Landlord Risk Audit Report</div>
+    <div style="font-size:24pt;font-weight:bold;color:${COLORS.black};margin-bottom:20px;">Landlord Risk Report</div>
     <div style="width:100%;height:1px;background:${COLORS.lightGray};margin-bottom:20px;"></div>
     <div style="width:80%;margin:0 auto;background:${COLORS.primaryGreen};padding:15px;margin-bottom:20px;">
       <div style="font-size:18pt;font-weight:bold;color:white;">COMPLIANCE ASSESSMENT</div>
     </div>
     <div style="margin-top:20px;">
-      <div style="font-size:14pt;font-weight:bold;margin-bottom:10px;">Report for ${d.propertyAddress}</div>
-      <div style="font-size:12pt;color:${COLORS.mediumGray};">Client: ${d.landlordName}</div>
+      <div style="font-size:14pt;font-weight:bold;margin-bottom:10px;">Client: ${d.landlordName}</div>
+      <div style="font-size:12pt;color:${COLORS.mediumGray};">Property: ${d.propertyAddress}</div>
     </div>
     <div style="width:50%;height:1px;background:${COLORS.primaryGreen};margin:15px auto;"></div>
     <div style="font-size:12pt;color:${COLORS.mediumGray};margin-top:30px;">
