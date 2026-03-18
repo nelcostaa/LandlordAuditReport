@@ -312,14 +312,9 @@ function PaymentSuccessContent() {
               <strong>What happens next?</strong>
             </p>
             <ul className="mt-2 space-y-2 text-muted-foreground">
-              <li>• You&apos;ll receive a confirmation email shortly</li>
-              <li>
-                • The email will contain a link to complete your audit
-                questionnaire
-              </li>
-              <li>
-                • Complete the questionnaire to receive your detailed report
-              </li>
+              <li>• Your questionnaire has been created.</li>
+              <li>• The email will contain a link to your questionnaire.</li>
+              <li>• Complete the questionnaire.</li>
             </ul>
           </div>
           <div className="flex flex-col gap-2">
