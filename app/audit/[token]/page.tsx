@@ -583,7 +583,7 @@ function AuditFormContent({
             </CardDescription>
             <CardDescription className="text-base leading-relaxed mt-3">
               Acting on the report will help you set up systems that will continue to safeguard
-              you in the future and will also enable you to pass your next Council HMO Licensing
+              you in the future and will also help you pass your next Council HMO Licensing
               Inspection.
             </CardDescription>
             <CardDescription className="text-base leading-relaxed mt-3">
@@ -717,18 +717,18 @@ function AuditFormContent({
                         </div>
                       )}
                     </div>
+                    {question.comment && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-700">
+                          {question.comment}
+                        </p>
+                      </div>
+                    )}
                     {question.motivation_learning_point && (
                       <CardDescription className="mt-3 italic text-gray-600 leading-relaxed">
                         <span className="font-semibold text-gray-900 not-italic block mb-1">Why it matters:</span>
                         {question.motivation_learning_point}
                       </CardDescription>
-                    )}
-                    {question.comment && (
-                      <div className="mt-3">
-                        <p className="text-sm text-blue-700 font-medium">
-                          {question.comment}
-                        </p>
-                      </div>
                     )}
                   </CardHeader>
                   <CardContent>
@@ -798,7 +798,7 @@ function AuditFormContent({
                           htmlFor={`comment-${question.id}`}
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Supporting Notes
+                          Additional Notes
                         </label>
                         <div className="relative group">
                           <Info 
