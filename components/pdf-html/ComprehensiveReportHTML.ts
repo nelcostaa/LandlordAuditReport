@@ -281,11 +281,9 @@ export function generateComprehensiveReportHTML(input: ComprehensiveReportInput)
     </div>
     <div style="width:50%;height:1px;background:${COLORS.primaryGreen};margin:15px auto;"></div>
     <div style="font-size:12pt;color:${COLORS.mediumGray};margin-top:30px;">
-      Conducted ${formatReportDate(d.auditStartDate)} to ${reportDate}
+      Report Date: ${reportDate}
     </div>
-    <div style="font-size:11pt;color:${COLORS.mediumGray};margin-top:8px;">
-      Audited by: ${d.auditorName || 'Landlord Audit Team'}
-    </div>
+
     <div style="font-size:14pt;font-weight:bold;color:${COLORS.darkGray};margin-top:20px;">Confidential Contents</div>
   </div>
   ${pageFooter}
@@ -553,7 +551,7 @@ export function generateComprehensiveReportHTML(input: ComprehensiveReportInput)
 <!-- ═══════ PAGE 7: EVIDENCE & DOCUMENTATION REVIEW ═══════ -->
 <div class="page">
   ${pageHeader}
-  <h1>Evidence &amp; Documentation Review</h1>
+  <h1>Score Summary</h1>
 
   <p>This section summarizes the evidence examined during the audit process. The assessment was based
   on documentation provided, systems in place, and procedures demonstrated.</p>
@@ -602,13 +600,7 @@ export function generateComprehensiveReportHTML(input: ComprehensiveReportInput)
   ${pageHeader}
   <h1>Introduction</h1>
 
-  <p>This Landlord Risk Audit Report provides a comprehensive assessment of your property management
-  practices and compliance status. The audit evaluates three critical areas of landlord responsibility:
-  Documentation, Landlord-Tenant Communication, and Evidence Gathering Systems and Procedures.</p>
-
-  <p>Each area has been assessed using a structured questionnaire designed to identify potential risks,
-  compliance gaps, and areas for improvement. The results are presented using a traffic light system
-  to help you quickly identify priority actions.</p>
+  <p>This report provides a comprehensive assessment of the risks you face as a landlord. It identifies areas of greatest risk that require your immediate attention, and provides practical recommended actions to mitigate them. Doing so will help you avoid future legal penalties, financial losses, and reputational damage.</p>
 
   <h2>Purpose of Survey</h2>
   <p>The primary purpose of this audit is to help landlords:</p>
@@ -620,9 +612,9 @@ export function generateComprehensiveReportHTML(input: ComprehensiveReportInput)
   </div>
 
   <h2>What the Colours and Scores Mean</h2>
-  <div style="margin-bottom:10px;display:flex;align-items:center;">${trafficDot(2, 18)} <span style="margin-left:10px;"><strong>Red (1-3):</strong> Actions need to be taken immediately. You can be fined or tenants have power to claim money from you. These are critical compliance issues that require urgent attention.</span></div>
-  <div style="margin-bottom:10px;display:flex;align-items:center;">${trafficDot(5, 18)} <span style="margin-left:10px;"><strong>Orange (4-6):</strong> Improvements need to be planned. Tenants will be able to win if you are taken to court. These areas require attention to avoid potential legal issues.</span></div>
-  <div style="margin-bottom:10px;display:flex;align-items:center;">${trafficDot(8, 18)} <span style="margin-left:10px;"><strong>Green (7-10):</strong> Doing well in this area. Maintain regular inspection and continue good practices. You are safe from compliance issues in these areas.</span></div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;">${trafficDot(2, 18)} <span style="margin-left:10px;"><strong>Red (1-3):</strong> High risk issues requiring immediate attention and corrective action.</span></div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;">${trafficDot(5, 18)} <span style="margin-left:10px;"><strong>Orange (4-6):</strong> Medium risk issues that need corrective action.</span></div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;">${trafficDot(8, 18)} <span style="margin-left:10px;"><strong>Green (7-10):</strong> Well-managed areas that demonstrate good practice but would benefit from future monitoring.</span></div>
 
   <h2>Theory</h2>
   <p>The audit is structured around three main categories, each containing multiple subcategories
@@ -660,6 +652,22 @@ export function generateComprehensiveReportHTML(input: ComprehensiveReportInput)
     <div class="bullet-item">&#8226; Incident Documentation</div>
     <div class="bullet-item">&#8226; Tenant Communication Archives</div>
     <div class="bullet-item">&#8226; Deposit Protection Documentation</div>
+  </div>
+
+  <div style="margin-top:25px;padding:20px;background:${COLORS.paleBlue};border:2px solid ${COLORS.blue};border-radius:4px;">
+    <div style="margin-bottom:10px;"><span style="font-size:14pt;font-weight:bold;">Overall Compliance Score</span></div>
+    <div style="display:flex;align-items:center;padding:8px 0;">
+      <span style="font-size:36pt;font-weight:bold;color:${overallColor};margin-right:15px;">${formatScore(d.overallScore)}</span>
+      ${trafficDot(d.overallScore, 24)}
+    </div>
+    <div style="margin-top:15px;font-size:12pt;line-height:1.4;">
+      <strong>Risk Classification:</strong> Tier ${tierNumber} - ${
+        tierNumber === '0' ? 'Minimal Risk' : tierNumber === '1' ? 'Low Risk' : tierNumber === '2' ? 'Moderate Risk' : tierNumber === '3' ? 'High Risk' : 'Severe Risk'
+      }
+    </div>
+    <div style="margin-top:5px;font-size:12pt;">
+      <strong>Compliance Status:</strong> ${compliantAreas} of ${totalAreas} areas meet standards (${nonCompliantAreas} require immediate action)
+    </div>
   </div>
 
   ${pageFooter}
