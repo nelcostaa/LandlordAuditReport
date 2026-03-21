@@ -30,7 +30,7 @@ export async function introduction(doc: jsPDF, data: ReportData): Promise<void> 
   doc.setFont('helvetica', 'normal');
   setTextColorHex(doc, COLORS.black);
   
-  const purposeText = 'This report provides a comprehensive assessment of your compliance with landlord legal obligations and industry best practices. It identifies areas of strength and highlights legal requirement gaps requiring immediate attention to avoid legal penalties, financial losses, and reputational damage.';
+  const purposeText = 'This report provides a comprehensive assessment of the risks you face as a landlord. It identifies areas of greatest risk that require your immediate attention, and provides practical recommended actions to mitigate them. Doing so will help you avoid future legal penalties, financial losses, and reputational damage.';
   const wrapped = doc.splitTextToSize(purposeText, contentWidth);
   doc.text(wrapped, startX, yPos);
   yPos += wrapped.length * 4 + 20;
@@ -53,7 +53,7 @@ export async function introduction(doc: jsPDF, data: ReportData): Promise<void> 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   setTextColorHex(doc, COLORS.black);
-  const redText = 'Critical compliance issues requiring immediate attention and corrective action.';
+  const redText = 'High risk issues requiring immediate attention and corrective action.';
   const redWrapped = doc.splitTextToSize(redText, contentWidth - 15);
   doc.text(redWrapped, startX + 15, yPos + 5);
   yPos += redWrapped.length * 4 + 10;
@@ -67,7 +67,7 @@ export async function introduction(doc: jsPDF, data: ReportData): Promise<void> 
   
   doc.setFont('helvetica', 'normal');
   setTextColorHex(doc, COLORS.black);
-  const orangeText = 'Areas that need improvement to meet compliance standards.';
+  const orangeText = 'Medium risk issues that need corrective action.';
   const orangeWrapped = doc.splitTextToSize(orangeText, contentWidth - 15);
   doc.text(orangeWrapped, startX + 15, yPos + 5);
   yPos += orangeWrapped.length * 4 + 10;
@@ -81,7 +81,7 @@ export async function introduction(doc: jsPDF, data: ReportData): Promise<void> 
   
   doc.setFont('helvetica', 'normal');
   setTextColorHex(doc, COLORS.black);
-  const greenText = 'Well-managed areas demonstrating good compliance practices.';
+  const greenText = 'Well-managed areas that demonstrate good practice but would benefit from future monitoring.';
   const greenWrapped = doc.splitTextToSize(greenText, contentWidth - 15);
   doc.text(greenWrapped, startX + 15, yPos + 5);
   
