@@ -57,7 +57,7 @@ export async function coverPage(doc: jsPDF, data: ReportData): Promise<void> {
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
   setTextColorHex(doc, COLORS.black);
-  doc.text('Landlord Risk Audit Report', centerX, yPos, { align: 'center' });
+  doc.text('Landlord Risk Report', centerX, yPos, { align: 'center' });
   yPos += 15;
   
   // Separator line
@@ -80,17 +80,17 @@ export async function coverPage(doc: jsPDF, data: ReportData): Promise<void> {
   doc.text('COMPLIANCE ASSESSMENT', centerX, yPos + 10, { align: 'center' });
   yPos += bannerHeight + 20;*/
   
-  // Property Info
+  // Client & Property Info
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   setTextColorHex(doc, COLORS.black);
-  doc.text(`Report for ${data.propertyAddress}`, centerX, yPos, { align: 'center' });
+  doc.text(`Client: ${data.landlordName}`, centerX, yPos, { align: 'center' });
   yPos += 8;
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   setTextColorHex(doc, COLORS.mediumGray);
-  doc.text(`Client: ${data.landlordName}`, centerX, yPos, { align: 'center' });
+  doc.text(`Property: ${data.propertyAddress}`, centerX, yPos, { align: 'center' });
   yPos += 20;
   
   // Green decorative line
@@ -101,20 +101,15 @@ export async function coverPage(doc: jsPDF, data: ReportData): Promise<void> {
   doc.line(lineX, yPos, lineX + lineWidth, yPos);
   yPos += 25;
   
-  // Date range
+  // Report Date
   doc.setFontSize(12);
   setTextColorHex(doc, COLORS.mediumGray);
   doc.text(
-    `Conducted ${formatReportDate(data.auditStartDate)} to ${formatReportDate(data.auditEndDate)}`,
+    `Report Date: ${formatReportDate(data.auditEndDate)}`,
     centerX,
     yPos,
     { align: 'center' }
   );
-  yPos += 8;
-  
-  // Auditor
-  doc.setFontSize(11);
-  doc.text(`Audited by: ${data.auditorName}`, centerX, yPos, { align: 'center' });
   yPos += 25;
   
   // Confidential label
