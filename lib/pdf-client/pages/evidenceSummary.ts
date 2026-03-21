@@ -26,7 +26,7 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
   doc.setFontSize(FONTS.h1.size);
   doc.setFont('helvetica', FONTS.h1.style);
   setTextColorHex(doc, COLORS.primaryGreen);
-  doc.text('Evidence & Documentation Summary', startX, yPos);
+  doc.text('Score Summary', startX, yPos);
   yPos += 20;
   
   // Group subcategories by category
