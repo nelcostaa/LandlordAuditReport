@@ -33,23 +33,7 @@ export async function coverPage(doc: jsPDF, data: ReportData): Promise<void> {
   setFillColorHex(doc, COLORS.topBarColor);
   doc.rect(0, 0, pageWidth, 15, 'F');
   
-  // 2. Metadata - Top Right
-  const metadataX = pageWidth - margins.right - 8;
-  let metadataY = 25;
-  
-  doc.setFontSize(9);
-  setTextColorHex(doc, COLORS.mediumGray);
-  doc.text(`Report ID: ${reportId}`, metadataX, metadataY, { align: 'right' });
-  metadataY += 5;
-  
-  doc.text(`Report Date: ${formatReportDate(data.auditEndDate)}`, metadataX, metadataY, { align: 'right' });
-  metadataY += 5;
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  setTextColorHex(doc, tierColor);
-  doc.text(`Risk Tier ${tierNumber}`, metadataX, metadataY, { align: 'right' });
-  
+
   // 3. Title Section (centered, starting at ~100mm from top)
   let yPos = 100;
   
