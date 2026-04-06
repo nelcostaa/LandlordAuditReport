@@ -42,24 +42,37 @@ export async function coverPage(doc: jsPDF, data: ReportData): Promise<void> {
   const auditDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   doc.text(`Audit Date: ${auditDate} | Client: ${data.landlordName || 'N/A'}`, 15, 61);
 
-  // 4. Header Right Text
-  doc.setFontSize(12);
+  // 4. Header Right Text - Perfectly Center-Aligned
+  const rightCenterX = splitX + ((pageWidth - splitX) / 2);
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
   setTextColorHex(doc, COLORS.footerOlive || '#6b7654');
-  doc.text('Your risk score:', splitX + 5, 20);
+  doc.text('YOUR RISK SCORE', rightCenterX, 22, { align: 'center' });
 
-  doc.setFontSize(40);
-  setTextColorHex(doc, COLORS.scoreOrange || '#f1ad33');
-  doc.text(`${data.overallScore.toFixed(1)}/10`, splitX + 5, 36);
+  // Dynamic Score Coloring
+  let scoreColorHex = COLORS.scoreOrange || '#f1ad33';
+  if (data.overallScore >= 7) scoreColorHex = COLORS.bannerGreenBorder || '#7dc08e';
+  else if (data.overallScore < 4) scoreColorHex = COLORS.bannerRedBorder || '#e0807f';
+
+  doc.setFontSize(44);
+  setTextColorHex(doc, scoreColorHex);
+  doc.text(`${data.overallScore.toFixed(1)}/10`, rightCenterX, 38, { align: 'center' });
+
+  // Divider Line
+  setDrawColorHex(doc, '#e5e7eb');
+  doc.setLineWidth(0.3);
+  doc.line(splitX + 15, 43, pageWidth - 15, 43);
 
   const compliantAreas = data.subcategoryScores.filter(s => s.color === 'green').length;
   const nonCompliantAreas = data.subcategoryScores.filter(s => s.color === 'red').length;
   const totalAreas = data.subcategoryScores.length;
 
-  doc.setFontSize(10);
-  setTextColorHex(doc, COLORS.mediumGray);
+  doc.setFontSize(9);
+  setTextColorHex(doc, COLORS.mediumGray || '#555555');
   doc.setFont('helvetica', 'normal');
-  const statusLine = `Compliance Status:\n${compliantAreas} of ${totalAreas} areas meet\nstandards (${nonCompliantAreas} require\nimmediate action)`;
-  doc.text(statusLine, splitX + 5, 48);
+  const statusLine = `COMPLIANCE STATUS\n${compliantAreas} of ${totalAreas} areas meet standards\n(${nonCompliantAreas} require immediate action)`;
+  doc.text(statusLine, rightCenterX, 50, { align: 'center', lineHeightFactor: 1.3 });
 
   // 5. Traffic Light Banners
   let by = 130; // Banner start Y
