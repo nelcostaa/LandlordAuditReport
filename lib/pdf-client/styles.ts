@@ -1,7 +1,7 @@
 // PDF Styles Configuration - Exact specifications from original @react-pdf design
 import jsPDF from 'jspdf';
 
-// Color Palette (from lib/pdf/styles.ts)
+// Color Palette
 export const COLORS = {
   // Primary brand colors
   primaryGreen: '#38761d',
