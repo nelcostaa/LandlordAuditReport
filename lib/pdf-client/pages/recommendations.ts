@@ -128,7 +128,11 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
           if (rowIndex < rowColors.length) {
             const color = rowColors[rowIndex];
             const cellX = cellData.cell.x + cellData.cell.width / 2;
-            const cellY = cellData.cell.y + cellData.cell.height / 2;
+            
+            // Align horizontally with the first line of top-aligned text. 
+            // cellPadding is 3. The font is 9pt (~3mm). So +5mm pushes the circle perfectly into the top line of text.
+            const cellY = cellData.cell.y + 5; 
+            
             drawTrafficLight(doc, cellX, cellY, color, 2);
           }
         }
