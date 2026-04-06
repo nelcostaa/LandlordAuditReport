@@ -133,7 +133,7 @@ export async function recommendations(doc: jsPDF, data: ReportData): Promise<voi
             // cellPadding is 3. The font is 9pt (~3mm). So +5mm pushes the circle perfectly into the top line of text.
             const cellY = cellData.cell.y + 5; 
             
-            drawTrafficLight(doc, cellX, cellY, color, 2);
+            drawTrafficLight(doc, cellX, cellY, color, 1.5);
           }
         }
       },

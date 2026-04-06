@@ -98,7 +98,7 @@ export async function evidenceSummary(doc: jsPDF, data: ReportData): Promise<voi
             const color = rowColors[rowIndex] as 'red' | 'orange' | 'green';
             const cellX = cellData.cell.x + cellData.cell.width / 2;
             const cellY = cellData.cell.y + cellData.cell.height / 2;
-            drawTrafficLight(doc, cellX, cellY, color, 2);
+            drawTrafficLight(doc, cellX, cellY, color, 1.5);
           }
         }
       },
