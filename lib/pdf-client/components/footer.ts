@@ -24,12 +24,12 @@ export function addPageFooter(doc: jsPDF): void {
   doc.addImage(BRAND_LOGO_BASE64, 'PNG', startX, footerY + 4, logoWidth, logoHeight);
 
   // Right Side: Graphic Traffic Lights Strip Embed
-  const stripW = 10;
-  // Maintaining aspect ratio of a standard vertical block 
-  // Let's use the aspect ratio roughly matching a standard 3-light stack
-  const stripH = 18;
-  const endX = pageWidth - 15 - stripW;
+  // The provided traffic-light.png is a 512x512 square, so we MUST 
+  // lock the width and height to a 1:1 aspect ratio to avoid distortion.
+  const imageSize = 16;
+  const endX = pageWidth - 15 - imageSize;
+  const centeredY = footerY + (footerHeight - imageSize) / 2;
   
-  doc.addImage(TRAFFIC_LIGHT_BASE64, 'PNG', endX, footerY + 2, stripW, stripH);
+  doc.addImage(TRAFFIC_LIGHT_BASE64, 'PNG', endX, centeredY, imageSize, imageSize);
 }
 
