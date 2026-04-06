@@ -8,6 +8,22 @@ export const COLORS = {
   darkGreen: '#34a853',
   topBarColor: '#bbbeaf',  // Cover page top decorative bar
   
+  // Custom Mockup Colors
+  headerSage: '#c6cebf', // Custom sage green for header left
+  brandBlue: '#213a69',  // Dark navy blue for main Cover titles
+  pageBeige: '#f4f3ed',  // Light warm grey/beige for body background
+  footerOlive: '#6b7654', // Dark olive for footer strip
+  scoreOrange: '#f1ad33', // Large orange color for risk score
+  
+  // Banner Colors
+  bannerRedBg: '#fae9e9',
+  bannerRedBorder: '#e0807f',
+  bannerOrangeBg: '#fceedb',
+  bannerOrangeBorder: '#e9b76e',
+  bannerGreenBg: '#e6f4ea',
+  bannerGreenBorder: '#7dc08e',
+  bannerLeftDark: '#59595b',
+  
   // Category colors
   blue: '#0b5394',
   lightBlue: '#1155cc',
