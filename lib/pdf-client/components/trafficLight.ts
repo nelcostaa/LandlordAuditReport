@@ -11,7 +11,6 @@ import { COLORS, setFillColorHex } from '../styles';
  * @param color - Traffic light color
  * @param size - Radius in mm (default: 2mm for small indicators)
  */
-import { TRAFFIC_LIGHT_BASE64 } from './logoBase64';
 
 export function drawTrafficLight(
   doc: jsPDF,
@@ -20,10 +19,9 @@ export function drawTrafficLight(
   color: 'red' | 'orange' | 'green',
   size: number = 2
 ): void {
-  // We use the exact uploaded traffic-light user asset
-  // Note: size is the radius historically, so width is size * 2
-  const diameter = size * 2;
-  doc.addImage(TRAFFIC_LIGHT_BASE64, 'PNG', x - size, y - size, diameter, diameter);
+  const fillColor = COLORS[color];
+  setFillColorHex(doc, fillColor);
+  doc.circle(x, y, size, 'F');
 }
 
 /**
